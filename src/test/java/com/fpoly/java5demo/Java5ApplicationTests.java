@@ -67,11 +67,29 @@ class Java5ApplicationTests {
 	@Autowired
 	private com.fpoly.java5demo.components.AuthInterceptor authInterceptor;
 
+	@Autowired
+	private org.springframework.web.context.WebApplicationContext webApplicationContext;
+
 	@Test
 	void contextLoads() {
 		assertNotNull(userServices);
 		assertNotNull(productServices);
 		assertNotNull(orderServices);
+	}
+
+	@Test
+	void testUserFormTemplateParsing() throws Exception {
+		org.springframework.test.web.servlet.MockMvc mockMvc = 
+				org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		User admin = userJPA.findByUsername("admin").orElse(null);
+		assertNotNull(admin);
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute("user", admin);
+		session.setAttribute("role", 1);
+
+		mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/admin/user-form")
+				.session(session))
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());
 	}
 
 	@Test
@@ -413,5 +431,59 @@ class Java5ApplicationTests {
 
 		boolean sellerAccess = authInterceptor.preHandle(sellerReq, sellerRes, new Object());
 		assertTrue(sellerAccess, "Seller role 2 phải được phép truy cập /seller/profile");
+	}
+
+	@Test
+	void testBuyerOrderApprovedBySellerAndSuperAdminRole() throws Exception {
+		// 1. Kiểm tra 3 cấp phân quyền hệ thống chuẩn: SuperAdmin (1), Seller (2), Người Mua (0)
+		User superAdmin = userJPA.findByUsername("admin").orElse(null);
+		assertNotNull(superAdmin);
+		assertEquals(1, superAdmin.getRole(), "Role 1 phải là Super Admin");
+
+		User seller = userJPA.findByUsername("seller").orElse(null);
+		assertNotNull(seller);
+		assertEquals(2, seller.getRole(), "Role 2 phải là Người Bán (Seller)");
+
+		User buyer = userJPA.findByUsername("user").orElse(null);
+		assertNotNull(buyer);
+		assertEquals(0, buyer.getRole(), "Role 0 phải là Người Mua (Buyer)");
+
+		// 2. Tạo đơn hàng mô phỏng Người Mua đặt hàng của Seller
+		List<Product> sellerProds = productJPA.findBySellerIdAndStatusTrue(seller.getId());
+		assertFalse(sellerProds.isEmpty(), "Seller phải có sản phẩm");
+		Product p = sellerProds.get(0);
+
+		Order order = new Order();
+		order.setUser(buyer);
+		order.setDate(new java.sql.Date(System.currentTimeMillis()));
+		order.setAddress("123 Phố Cầu Giấy, Hà Nội");
+		order.setPaymentMethod("COD");
+		order.setTotalPrice(p.getPrice());
+		order.setStatus(0); // 0: Chờ duyệt (Khách mới đặt)
+		Order savedOrder = orderJPA.save(order);
+
+		OrderDetail detail = new OrderDetail();
+		detail.setOrder(savedOrder);
+		detail.setProduct(p);
+		detail.setProductName(p.getName());
+		detail.setPrice(p.getPrice());
+		detail.setQuantity(1);
+		orderDetailJPA.save(detail);
+
+		// Gán chi tiết đơn hàng để kiểm tra Seller phụ trách
+		savedOrder = orderJPA.findById(savedOrder.getId()).orElse(null);
+		assertNotNull(savedOrder);
+		savedOrder.setOrderDetails(List.of(detail));
+		assertEquals(0, savedOrder.getStatus(), "Đơn hàng mới tạo phải ở trạng thái 0 (Chờ duyệt)");
+		assertNotNull(savedOrder.getSellerNames());
+		assertTrue(savedOrder.getSellerNames().contains(seller.getName()), "Đơn hàng phải nhận diện đúng Người Bán phụ trách");
+
+		// 3. Người Bán (Seller) tiến hành phê duyệt đơn hàng (chuyển sang trạng thái 1 - Đã duyệt & đóng gói)
+		boolean approved = orderServices.updateStatus(savedOrder.getId(), 1);
+		assertTrue(approved, "Người Bán phải cập nhật/phê duyệt đơn thành công");
+
+		Order reloadedOrder = orderJPA.findById(savedOrder.getId()).orElse(null);
+		assertNotNull(reloadedOrder);
+		assertEquals(1, reloadedOrder.getStatus(), "Trạng thái đơn hàng sau khi Seller duyệt phải là 1 (Đã xác nhận & đóng gói)");
 	}
 }

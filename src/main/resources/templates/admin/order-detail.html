@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title th:text="'Quản Lý Đơn Hàng #' + ${order.id} + ' | PolyShop Admin'">Chi Tiết Đơn Hàng Admin</title>
+  <title th:text="'Giám Sát Đơn Hàng #' + ${order.id} + ' | PolyShop Super Admin'">Chi Tiết Đơn Hàng Super Admin</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" th:href="@{/static/css/polyshop.css}">
@@ -15,7 +15,7 @@
     <div class="container">
       <a class="navbar-brand fw-bold text-danger d-flex align-items-center gap-2" th:href="@{/admin}">
         <i class="bi bi-shield-lock-fill"></i>
-        <span>PolyShop Admin</span>
+        <span>PolyShop Super Admin</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
         <span class="navbar-toggler-icon"></span>
@@ -26,7 +26,7 @@
           <li class="nav-item"><a class="nav-link" th:href="@{/admin}"><i class="bi bi-speedometer2 me-1"></i>Tổng Quan</a></li>
           <li class="nav-item"><a class="nav-link" th:href="@{/admin/product-form}"><i class="bi bi-box-seam me-1"></i>Sản Phẩm</a></li>
           <li class="nav-item"><a class="nav-link" th:href="@{/admin/category-form}"><i class="bi bi-tags me-1"></i>Danh Mục</a></li>
-          <li class="nav-item"><a class="nav-link active" th:href="@{/admin/orders}"><i class="bi bi-receipt me-1"></i>Đơn Hàng</a></li>
+          <li class="nav-item"><a class="nav-link active" th:href="@{/admin/orders}"><i class="bi bi-receipt me-1"></i>Giám Sát Đơn Hàng</a></li>
           <li class="nav-item"><a class="nav-link" th:href="@{/admin/user-form}"><i class="bi bi-people me-1"></i>Người Dùng</a></li>
           <li class="nav-item"><a class="nav-link text-warning" th:href="@{/admin/seller-requests}"><i class="bi bi-shop me-1"></i>Duyệt Người Bán</a></li>
         </ul>
@@ -53,23 +53,34 @@
 
       <div class="d-flex justify-content-between align-items-center mb-3">
         <a th:href="@{/admin/orders}" class="btn btn-outline-secondary btn-sm">
-          <i class="bi bi-chevron-left me-1"></i>Quay lại danh sách đơn hàng
+          <i class="bi bi-chevron-left me-1"></i>Quay lại danh sách đơn hàng toàn sàn
         </a>
         <span class="fs-5 fw-bold text-danger" th:text="'ĐƠN HÀNG #' + ${order.id}">#1</span>
       </div>
 
-      <!-- Update Status Card -->
+      <!-- Super Admin Oversight Alert -->
+      <div class="alert alert-info border-info d-flex align-items-center mb-4 shadow-sm bg-info bg-opacity-10">
+        <i class="bi bi-shield-check fs-2 text-primary me-3"></i>
+        <div>
+          <h6 class="fw-bold text-dark mb-1">Chế Độ Giám Sát Super Admin</h6>
+          <p class="text-muted small mb-0">
+            Theo quy trình vận hành sàn PolyShop, đơn hàng của <strong>Người Mua</strong> sẽ do chính <strong>Người Bán (Seller)</strong> phụ trách sản phẩm duyệt và xử lý giao hàng. Super Admin theo dõi tiến trình toàn sàn và chỉ can thiệp khi có tranh chấp hoặc sự cố.
+          </p>
+        </div>
+      </div>
+
+      <!-- Update Status Card (SuperAdmin Emergency Override) -->
       <div class="bg-white rounded-3 shadow-sm p-4 mb-4 border border-start border-4 border-danger">
-        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-gear-fill text-danger me-2"></i>Cập Nhật Trạng Thái Đơn Hàng</h5>
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-shield-lock-fill text-danger me-2"></i>Can Thiệp Trạng Thái Đơn Hàng (Quyền Super Admin)</h5>
 
         <form th:action="@{/admin/order/status}" method="post" class="row g-3 align-items-center">
           <input type="hidden" name="orderId" th:value="${order.id}">
 
           <div class="col-md-6">
             <select name="status" class="form-select">
-              <option value="0" th:selected="${order.status == 0}">0 - Chờ xác nhận (Mới đặt)</option>
-              <option value="1" th:selected="${order.status == 1}">1 - Đã xác nhận (Đang đóng gói hàng)</option>
-              <option value="2" th:selected="${order.status == 2}">2 - Đang giao hàng (Đã giao cho Shipper)</option>
+              <option value="0" th:selected="${order.status == 0}">0 - Chờ xác nhận (Chờ Người Bán duyệt)</option>
+              <option value="1" th:selected="${order.status == 1}">1 - Đã xác nhận (Người Bán đã duyệt & đóng gói)</option>
+              <option value="2" th:selected="${order.status == 2}">2 - Đang giao hàng (Đã bàn giao cho Shipper)</option>
               <option value="3" th:selected="${order.status == 3}">3 - Đã nhận hàng</option>
               <option value="4" th:selected="${order.status == 4}">4 - Hoàn thành đơn hàng</option>
               <option value="5" th:selected="${order.status == 5}">5 - Hủy đơn hàng</option>
@@ -77,8 +88,8 @@
           </div>
 
           <div class="col-md-3">
-            <button type="submit" class="btn btn-polyshop-orange w-100 fw-semibold">
-              <i class="bi bi-check2-circle me-1"></i>Lưu Trạng Thái
+            <button type="submit" class="btn btn-danger w-100 fw-semibold">
+              <i class="bi bi-shield-check me-1"></i>Lưu Can Thiệp
             </button>
           </div>
         </form>
@@ -88,7 +99,7 @@
       <div class="bg-white rounded-3 shadow-sm p-4 mb-4 border">
         <div class="row g-3 mb-4">
           <div class="col-md-6">
-            <h6 class="fw-bold text-muted small text-uppercase">Khách hàng</h6>
+            <h6 class="fw-bold text-muted small text-uppercase">Người Mua (Khách Hàng)</h6>
             <div class="fw-bold fs-6 text-dark" th:text="${order.user != null ? order.user.name : 'Khách vãng lai'}">Tên khách</div>
             <div class="text-secondary small" th:text="'Username: ' + ${order.user != null ? order.user.username : 'N/A'}">user1</div>
             <div class="text-secondary small" th:text="'Email: ' + ${order.user != null ? order.user.email : 'N/A'}">email</div>
@@ -125,6 +136,11 @@
                          class="rounded border" style="width: 50px; height: 50px; object-fit: cover;">
                     <div>
                       <span class="fw-semibold d-block text-dark" th:text="${det.displayName}">Tên sản phẩm</span>
+                      <div class="mt-1" th:if="${det.product != null && det.product.seller != null}">
+                        <span class="badge bg-light text-dark border">
+                          <i class="bi bi-shop me-1 text-danger"></i>Người bán phụ trách: <strong th:text="${det.product.seller.name}">Shop</strong>
+                        </span>
+                      </div>
                       <div class="d-flex flex-wrap gap-1 align-items-center mt-1">
                         <span th:if="${det.isProductDeleted()}" class="badge bg-secondary" style="font-size: 0.72rem;">
                           <i class="bi bi-x-circle me-1"></i>Sản phẩm đã bị xóa hoặc ngừng kinh doanh

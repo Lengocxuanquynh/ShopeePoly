@@ -30,8 +30,8 @@
         <div class="p-3 bg-light rounded-3 mb-4 d-flex justify-content-between align-items-center">
           <div>
             <span class="text-muted small">TRẠNG THÁI HIỆN TẠI:</span>
-            <span th:if="${order.status == 0}" class="badge bg-warning text-dark fs-6 ms-2">Chờ xác nhận</span>
-            <span th:if="${order.status == 1}" class="badge bg-info text-white fs-6 ms-2">Đã xác nhận</span>
+            <span th:if="${order.status == 0}" class="badge bg-warning text-dark fs-6 ms-2">Chờ Người Bán duyệt</span>
+            <span th:if="${order.status == 1}" class="badge bg-info text-white fs-6 ms-2">Người Bán đã duyệt & đóng gói</span>
             <span th:if="${order.status == 2}" class="badge bg-primary text-white fs-6 ms-2">Đang giao hàng</span>
             <span th:if="${order.status == 3}" class="badge bg-success text-white fs-6 ms-2">Đã nhận hàng</span>
             <span th:if="${order.status == 4}" class="badge bg-success text-white fs-6 ms-2">Hoàn thành</span>

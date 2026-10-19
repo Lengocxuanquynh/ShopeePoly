@@ -54,8 +54,8 @@
               <span class="text-muted small">| Ngày đặt: <span th:text="${ord.date}">2026-09-26</span></span>
             </div>
             <div>
-              <span th:if="${ord.status == 0}" class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Chờ xác nhận</span>
-              <span th:if="${ord.status == 1}" class="badge bg-info text-white"><i class="bi bi-check2-circle me-1"></i>Đã xác nhận</span>
+              <span th:if="${ord.status == 0}" class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Chờ Người Bán duyệt</span>
+              <span th:if="${ord.status == 1}" class="badge bg-info text-white"><i class="bi bi-check2-circle me-1"></i>Người Bán đã duyệt & đóng gói</span>
               <span th:if="${ord.status == 2}" class="badge bg-primary text-white"><i class="bi bi-truck me-1"></i>Đang giao hàng</span>
               <span th:if="${ord.status == 3}" class="badge bg-success text-white"><i class="bi bi-box2-heart me-1"></i>Đã nhận hàng</span>
               <span th:if="${ord.status == 4}" class="badge bg-success text-white"><i class="bi bi-patch-check-fill me-1"></i>Hoàn thành</span>

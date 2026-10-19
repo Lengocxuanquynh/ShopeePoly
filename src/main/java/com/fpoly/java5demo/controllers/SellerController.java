@@ -375,7 +375,12 @@ public class SellerController {
 
 		boolean ok = orderServices.updateStatus(orderId, status);
 		if (ok) {
-			redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái đơn hàng thành công!");
+			if (status == 1) {
+				redirectAttributes.addFlashAttribute("successMessage",
+						"Đã phê duyệt đơn hàng của Người Mua thành công! Kiện hàng đã chuyển sang trạng thái chuẩn bị đóng gói.");
+			} else {
+				redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái đơn hàng thành công!");
+			}
 		} else {
 			redirectAttributes.addFlashAttribute("errorMessage", "Không thể cập nhật trạng thái đơn hàng!");
 		}

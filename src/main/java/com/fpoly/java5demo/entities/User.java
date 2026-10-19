@@ -43,10 +43,8 @@ public class User {
 	private boolean status = true;
 
 	@Column(name = "role", nullable = false)
-	private int role = 0;
+	private int role = 0; // 0: Người Mua (Khách Hàng / Buyer), 1: Super Admin (Quản Trị Tối Cao), 2: Người Bán (Seller)
 
 	@OneToMany(mappedBy = "user")
 	List<CartDetail> cartDetails;
-
-//	User == 0
 }

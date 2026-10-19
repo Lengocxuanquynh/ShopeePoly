@@ -49,7 +49,7 @@
                 <li th:if="${currentUser.role == 1}"><hr class="dropdown-divider"></li>
                 <li th:if="${currentUser.role == 1}"><a class="dropdown-item text-danger fw-semibold" th:href="@{/seller/dashboard}"><i class="bi bi-shop me-2"></i>Kênh Người Bán</a></li>
                 <li th:if="${currentUser.role == 1}"><a class="dropdown-item text-dark" th:href="@{/seller/profile}"><i class="bi bi-person-badge me-2 text-warning"></i>Hồ Sơ Gian Hàng</a></li>
-                <li th:if="${currentUser.role == 1}"><a class="dropdown-item text-danger fw-bold" th:href="@{/admin}"><i class="bi bi-shield-lock-fill me-2"></i>Quản trị Hệ Thống (Admin)</a></li>
+                <li th:if="${currentUser.role == 1}"><a class="dropdown-item text-danger fw-bold" th:href="@{/admin}"><i class="bi bi-shield-lock-fill me-2"></i>Kênh Quản Trị (Super Admin)</a></li>
 
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-secondary" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>Đăng Xuất</a></li>

@@ -33,7 +33,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL,
     phone VARCHAR(20) NULL,
     status BIT NOT NULL DEFAULT 1,
-    role INT NOT NULL DEFAULT 0 -- 0: User / Khách hàng, 1: Admin / Quản trị viên, 2: Seller
+    role INT NOT NULL DEFAULT 0 -- 0: Người Mua (Khách hàng), 1: Super Admin (Quản trị tối cao), 2: Người Bán (Seller)
 );
 GO
 
@@ -128,10 +128,10 @@ GO
 
 -- A. Users
 INSERT INTO users (username, password, name, email, phone, status, role) VALUES 
-('admin', '123456', N'Quản Trị Viên Shopee', 'admin@shopee.vn', '0901234567', 1, 1),
+('admin', '123456', N'Super Admin PolyShop', 'admin@shopee.vn', '0901234567', 1, 1),
 ('seller', '123456', N'Chủ Shop Poly Fashion', 'seller@shopee.vn', '0987654321', 1, 2),
-('user1', '123456', N'Nguyễn Văn A', 'nguyenvana@gmail.com', '0912345678', 1, 0),
-('user2', '123456', N'Trần Thị Bích', 'bichthitran@gmail.com', '0934567890', 1, 0);
+('user1', '123456', N'Nguyễn Văn A (Người Mua)', 'nguyenvana@gmail.com', '0912345678', 1, 0),
+('user2', '123456', N'Trần Thị Bích (Người Mua)', 'bichthitran@gmail.com', '0934567890', 1, 0);
 GO
 
 -- B. Categories

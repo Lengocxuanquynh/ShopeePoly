@@ -133,12 +133,12 @@
         <div class="text-warning mb-3">
           <i class="bi bi-hourglass-split display-3"></i>
         </div>
-        <h4 class="fw-bold text-dark mb-2">Hồ Sơ Đăng Ký Đang Chờ Ban Quản Trị Phê Duyệt</h4>
+        <h4 class="fw-bold text-dark mb-2">Hồ Sơ Đăng Ký Đang Chờ Super Admin Phê Duyệt</h4>
         <p class="text-muted mb-2">
           Yêu cầu mở gian hàng <strong class="text-danger" th:text="${pendingRequest.shopName}">Tên Shop</strong> của bạn đã được tiếp nhận vào ngày <span class="fw-bold" th:text="${pendingRequest.createdAt}"></span>.
         </p>
         <p class="text-secondary small mb-4">
-          Ban Quản Trị PolyShop đang xem xét hồ sơ và thông tin liên hệ. Sau khi được phê duyệt, bạn sẽ được cấp quyền Người Bán và có thể bắt đầu đăng bán sản phẩm!
+          Super Admin PolyShop đang xem xét hồ sơ và thông tin liên hệ. Sau khi được phê duyệt, bạn sẽ được cấp quyền Người Bán để đăng bán sản phẩm và trực tiếp phê duyệt đơn hàng từ Người Mua!
         </p>
         <div class="d-flex justify-content-center gap-2">
           <a th:href="@{/}" class="btn btn-outline-secondary">

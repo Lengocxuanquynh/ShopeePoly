@@ -38,9 +38,9 @@ public class DatabaseDataInitializer implements CommandLineRunner {
 			User admin = new User();
 			admin.setUsername("admin");
 			admin.setPassword("123456");
-			admin.setName("Quản Trị Viên PolyShop");
+			admin.setName("Super Admin PolyShop");
 			admin.setEmail("admin@polyshop.vn");
-			admin.setRole(1); // 1: Admin
+			admin.setRole(1); // 1: Super Admin (Quản trị tối cao)
 			admin.setStatus(true);
 			userJPA.save(admin);
 
@@ -68,9 +68,9 @@ public class DatabaseDataInitializer implements CommandLineRunner {
 			User user = new User();
 			user.setUsername("user");
 			user.setPassword("123456");
-			user.setName("Nguyễn Văn A");
+			user.setName("Nguyễn Văn A (Người Mua)");
 			user.setEmail("user@polyshop.vn");
-			user.setRole(0); // 0: User
+			user.setRole(0); // 0: Người Mua (Khách hàng)
 			user.setStatus(true);
 			userJPA.save(user);
 

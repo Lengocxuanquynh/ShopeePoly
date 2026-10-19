@@ -48,4 +48,25 @@ public class Order {
 
 	@OneToMany(mappedBy = "order")
 	List<OrderDetail> orderDetails;
+
+	public String getSellerNames() {
+		try {
+			if (orderDetails == null || !org.hibernate.Hibernate.isInitialized(orderDetails) || orderDetails.isEmpty()) {
+				return "Gian Hàng Hệ Thống";
+			}
+			java.util.Set<String> sellers = new java.util.LinkedHashSet<>();
+			for (OrderDetail od : orderDetails) {
+				if (od.getProduct() != null && od.getProduct().getSeller() != null
+						&& od.getProduct().getSeller().getName() != null) {
+					sellers.add(od.getProduct().getSeller().getName());
+				}
+			}
+			if (sellers.isEmpty()) {
+				return "Gian Hàng Hệ Thống";
+			}
+			return String.join(", ", sellers);
+		} catch (Exception e) {
+			return "Gian Hàng Hệ Thống";
+		}
+	}
 }
