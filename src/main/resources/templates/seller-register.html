@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Ký Bán Hàng Cùng PolyShop | Kênh Người Bán</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" th:href="@{/static/css/polyshop.css}">
+  <style>
+    .seller-hero {
+      background: linear-gradient(135deg, #f53d2d 0%, #ff6633 100%);
+      color: white;
+      padding: 50px 0 40px 0;
+      border-radius: 0 0 24px 24px;
+    }
+    .seller-perk-card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 14px;
+      padding: 20px;
+      transition: transform 0.2s;
+    }
+    .seller-perk-card:hover {
+      transform: translateY(-4px);
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- Top Bar & Navbar -->
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <main class="main-content pb-5">
+    <!-- Hero Banner -->
+    <section class="seller-hero mb-5 shadow-sm">
+      <div class="container text-center">
+        <span class="badge bg-white text-danger fw-bold px-3 py-2 rounded-pill mb-3">
+          <i class="bi bi-stars me-1"></i>HỆ THỐNG ĐỐI TÁC NGƯỜI BÁN POLYSHOP
+        </span>
+        <h1 class="fw-bold display-6 mb-3">Đăng Ký Bán Hàng Cùng PolyShop</h1>
+        <p class="lead opacity-90 mx-auto" style="max-width: 650px;">
+          Bắt đầu kinh doanh trực tuyến dễ dàng, tiếp cận hàng triệu khách hàng toàn quốc với chi phí khởi tạo 0Đ.
+        </p>
+
+        <!-- 3 Perks -->
+        <div class="row g-3 mt-4 text-start justify-content-center">
+          <div class="col-md-4">
+            <div class="seller-perk-card d-flex align-items-center gap-3">
+              <div class="fs-1 text-warning"><i class="bi bi-tag-fill"></i></div>
+              <div>
+                <h6 class="fw-bold mb-1">0Đ Phí Khởi Tạo</h6>
+                <small class="opacity-75">Mở gian hàng kinh doanh hoàn toàn miễn phí</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="seller-perk-card d-flex align-items-center gap-3">
+              <div class="fs-1 text-info"><i class="bi bi-people-fill"></i></div>
+              <div>
+                <h6 class="fw-bold mb-1">Tiếp Cận Toàn Quốc</h6>
+                <small class="opacity-75">Kết nối người mua tiềm năng trên toàn quốc</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="seller-perk-card d-flex align-items-center gap-3">
+              <div class="fs-1 text-light"><i class="bi bi-graph-up-arrow"></i></div>
+              <div>
+                <h6 class="fw-bold mb-1">Quản Lý Trực Quan</h6>
+                <small class="opacity-75">Bảng điều khiển quản trị đơn và kho hàng hiện đại</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Registration Content Form -->
+    <div class="container" style="max-width: 800px;">
+
+      <!-- Alerts -->
+      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+
+      <!-- Flash Success Message -->
+      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+
+      <!-- Case 1: Already a seller -->
+      <div th:if="${alreadySeller == true}" class="card border-0 shadow-sm p-4 text-center rounded-3 bg-white mb-4">
+        <div class="text-success mb-3">
+          <i class="bi bi-check-circle-fill display-3"></i>
+        </div>
+        <h4 class="fw-bold text-dark mb-2">Tài Khoản Đã Có Quyền Người Bán!</h4>
+        <p class="text-muted mb-4">
+          Tài khoản của bạn đã được kích hoạt tính năng Người Bán / Quản trị viên trên sàn PolyShop. Bạn có thể truy cập ngay vào Kênh Quản Trị để đăng sản phẩm và xử lý đơn hàng.
+        </p>
+        <div>
+          <a th:href="@{/seller/dashboard}" class="btn btn-polyshop-orange btn-lg px-4 fw-bold">
+            <i class="bi bi-shop me-2"></i>Truy Cập Kênh Người Bán (Seller Centre)
+          </a>
+        </div>
+      </div>
+
+      <!-- Case 2: Not Logged In -->
+      <div th:if="${currentUser == null}" class="card border-0 shadow-sm p-5 text-center rounded-3 bg-white mb-4">
+        <div class="text-warning mb-3">
+          <i class="bi bi-person-lock display-3"></i>
+        </div>
+        <h4 class="fw-bold text-dark mb-2">Vui Lòng Đăng Nhập Để Đăng Ký Mở Gian Hàng</h4>
+        <p class="text-muted mb-4">
+          Để liên kết thông tin gian hàng và quản trị đơn hàng, bạn cần có một tài khoản PolyShop đang hoạt động.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <a th:href="@{/login(redirect='/seller')}" class="btn btn-polyshop-orange btn-lg px-4 fw-semibold">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Đăng Nhập Ngay
+          </a>
+          <a th:href="@{/register}" class="btn btn-outline-secondary btn-lg px-4">
+            Đăng Ký Tài Khoản Mới
+          </a>
+        </div>
+      </div>
+
+      <!-- Case 3: Pending Approval -->
+      <div th:if="${currentUser != null && pendingRequest != null}" class="card border-0 shadow-sm p-4 text-center rounded-3 bg-white mb-4 border-start border-4 border-warning">
+        <div class="text-warning mb-3">
+          <i class="bi bi-hourglass-split display-3"></i>
+        </div>
+        <h4 class="fw-bold text-dark mb-2">Hồ Sơ Đăng Ký Đang Chờ Ban Quản Trị Phê Duyệt</h4>
+        <p class="text-muted mb-2">
+          Yêu cầu mở gian hàng <strong class="text-danger" th:text="${pendingRequest.shopName}">Tên Shop</strong> của bạn đã được tiếp nhận vào ngày <span class="fw-bold" th:text="${pendingRequest.createdAt}"></span>.
+        </p>
+        <p class="text-secondary small mb-4">
+          Ban Quản Trị PolyShop đang xem xét hồ sơ và thông tin liên hệ. Sau khi được phê duyệt, bạn sẽ được cấp quyền Người Bán và có thể bắt đầu đăng bán sản phẩm!
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+          <a th:href="@{/}" class="btn btn-outline-secondary">
+            <i class="bi bi-house me-1"></i>Về Trang Mua Sắm
+          </a>
+        </div>
+      </div>
+
+      <!-- Notice if Previous Request was Rejected -->
+      <div th:if="${currentUser != null && rejectedRequest != null && pendingRequest == null}" class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Hồ sơ đăng ký mở gian hàng trước đó đã bị Ban Quản Trị từ chối. Bạn có thể kiểm tra lại thông tin và gửi lại mẫu đăng ký bên dưới.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+
+      <!-- Case 4: Logged In and Regular User (Ready to register) -->
+      <div th:if="${currentUser != null && alreadySeller != true && pendingRequest == null}" class="card border-0 shadow-sm rounded-3 overflow-hidden bg-white mb-4">
+        <div class="card-header bg-white border-bottom p-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="bg-danger text-white rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+              <i class="bi bi-shop fs-4"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold text-dark mb-1">Thông Tin Đăng Ký Gian Hàng</h5>
+              <p class="text-muted small mb-0">Điền thông tin để nâng cấp tài khoản của bạn thành Người Bán chính thức</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-4">
+          <form method="post" th:action="@{/seller/register}" th:object="${sellerRegisterBean}">
+            <div class="row g-3">
+              <!-- Shop Name -->
+              <div class="col-md-12">
+                <label for="shopName" class="form-label fw-semibold small">Tên gian hàng / Tên Shop *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-shop-window"></i></span>
+                  <input type="text" class="form-control" id="shopName" th:field="*{shopName}"
+                         placeholder="Ví dụ: Poly Fashion Official, Shop Gia Dụng Việt..."
+                         th:classappend="${#fields.hasErrors('shopName')} ? 'is-invalid' : ''">
+                </div>
+                <small class="text-danger" th:errors="*{shopName}"></small>
+                <div class="form-text small">Tên này sẽ hiển thị cho người mua khi xem sản phẩm của bạn.</div>
+              </div>
+
+              <!-- Owner Name (prefilled) -->
+              <div class="col-md-6">
+                <label for="ownerName" class="form-label fw-semibold small">Họ và tên người đại diện *</label>
+                <input type="text" class="form-control" id="ownerName"
+                       th:value="${currentUser.name}" readonly style="background-color: #f8f9fa;">
+              </div>
+
+              <!-- Email (prefilled) -->
+              <div class="col-md-6">
+                <label for="email" class="form-label fw-semibold small">Email liên hệ *</label>
+                <input type="email" class="form-control" id="email"
+                       th:value="${currentUser.email}" readonly style="background-color: #f8f9fa;">
+              </div>
+
+              <!-- Phone -->
+              <div class="col-md-6">
+                <label for="phone" class="form-label fw-semibold small">Số điện thoại liên hệ *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                  <input type="tel" class="form-control" id="phone" th:field="*{phone}"
+                         placeholder="Ví dụ: 0912345678"
+                         th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid' : ''">
+                </div>
+                <small class="text-danger" th:errors="*{phone}"></small>
+              </div>
+
+              <!-- Category -->
+              <div class="col-md-6">
+                <label for="categoryId" class="form-label fw-semibold small">Ngành hàng kinh doanh chính</label>
+                <select class="form-select" id="categoryId" th:field="*{categoryId}">
+                  <option value="">-- Chọn ngành hàng dự kiến --</option>
+                  <th:block th:each="cat : ${categories}">
+                    <option th:value="${cat.id}" th:text="${cat.name}"></option>
+                  </th:block>
+                </select>
+              </div>
+
+              <!-- Pickup Address -->
+              <div class="col-12">
+                <label for="address" class="form-label fw-semibold small">Địa chỉ kho hàng / lấy hàng *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+                  <textarea class="form-control" id="address" th:field="*{address}" rows="2"
+                            placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..."
+                            th:classappend="${#fields.hasErrors('address')} ? 'is-invalid' : ''"></textarea>
+                </div>
+                <small class="text-danger" th:errors="*{address}"></small>
+                <div class="form-text small">Đơn vị vận chuyển sẽ đến địa chỉ này để lấy kiện hàng khi có đơn phát sinh.</div>
+              </div>
+
+              <!-- Agreement Checkbox -->
+              <div class="col-12 mt-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="termsAgree" th:field="*{termsAgree}">
+                  <label class="form-check-label small text-muted" for="termsAgree">
+                    Tôi đồng ý với các <strong>Quy chuẩn cộng đồng</strong> và <strong>Chính sách Người bán</strong> của PolyShop.
+                  </label>
+                </div>
+                <small class="text-danger d-block" th:errors="*{termsAgree}"></small>
+              </div>
+
+              <!-- Submit button -->
+              <div class="col-12 mt-4 text-center">
+                <button type="submit" class="btn btn-polyshop-orange btn-lg px-5 py-2 fw-bold w-100">
+                  <i class="bi bi-check2-circle me-1"></i>Hoàn Tất Đăng Ký Mở Shop
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

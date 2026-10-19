@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giỏ Hàng | PolyShop</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" th:href="@{/static/css/polyshop.css}">
+</head>
+<body>
+  <!-- Navigation Header Fragment -->
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <main class="main-content py-4">
+    <div class="container">
+
+      <!-- Free Shipping notification banner -->
+      <div class="alert alert-warning d-flex align-items-center gap-2 py-2 mb-3 shadow-sm border-0" style="background-color: #fff9e6; color: #d0011b;" role="alert">
+        <i class="bi bi-truck fs-5"></i>
+        <span class="small">Nhấn vào mục Mã giảm giá ở cuối trang để hưởng miễn phí vận chuyển từ đơn 0Đ!</span>
+      </div>
+
+      <!-- Empty Cart State -->
+      <div th:if="${#lists.isEmpty(cartItems)}" class="bg-white rounded-3 p-5 text-center shadow-sm">
+        <i id="emptyCartIcon" class="bi bi-cart-x fs-1 text-muted mb-2"></i>
+        <h5 class="fw-bold text-dark">Giỏ hàng của bạn còn trống</h5>
+        <p class="text-muted small">Hãy thêm những món đồ yêu thích vào giỏ hàng ngay nào!</p>
+        <a th:href="@{/}" class="btn btn-polyshop-orange px-4 py-2 mt-2">MUA NGAY</a>
+      </div>
+
+      <!-- Warning if logged in as Admin -->
+      <div th:if="${currentUser != null && currentUser.role == 1}" class="alert alert-warning d-flex align-items-center mb-3 shadow-sm border-warning">
+        <i class="bi bi-shield-exclamation fs-4 me-2 text-warning"></i>
+        <div>
+          <strong>Thông báo Quản Trị Viên:</strong> Tài khoản Quản trị viên (Admin) không được phép thực hiện chức năng mua hàng trên sàn.
+        </div>
+      </div>
+
+      <!-- Cart Content -->
+      <div th:if="${!#lists.isEmpty(cartItems)}">
+        <!-- Table Header Card -->
+        <div class="bg-white rounded-3 p-3 shadow-sm mb-3 d-none d-md-block text-secondary small fw-semibold">
+          <div class="row align-items-center text-center">
+            <div class="col-md-5 text-start ps-4">Sản Phẩm</div>
+            <div class="col-md-2">Đơn Giá</div>
+            <div class="col-md-2">Số Lượng</div>
+            <div class="col-md-2">Số Tiền</div>
+            <div class="col-md-1">Thao Tác</div>
+          </div>
+        </div>
+
+        <!-- Cart Item Rows -->
+        <div class="bg-white rounded-3 shadow-sm mb-4">
+          <div class="p-3 border-bottom d-flex align-items-center gap-2">
+            <span class="badge bg-danger">PolyMall</span>
+            <span class="fw-bold small text-dark">Cửa Hàng Chính Hãng</span>
+          </div>
+
+          <div th:each="item : ${cartItems}" class="p-3 border-bottom">
+            <div class="row align-items-center text-center g-3">
+              <!-- Product info -->
+              <div class="col-12 col-md-5 text-start">
+                <div class="d-flex align-items-center gap-3">
+                  <img th:if="${item.product.images != null && !item.product.images.isEmpty()}"
+                       th:src="@{'/uploads/' + ${item.product.images[0].name}}"
+                       class="rounded border p-1" style="width: 70px; height: 70px; object-fit: cover;"
+                       onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80';">
+                  <img th:if="${item.product.images == null || item.product.images.isEmpty()}"
+                       src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80"
+                       class="rounded border p-1" style="width: 70px; height: 70px; object-fit: cover;">
+                  <div>
+                    <a th:href="@{'/product/' + ${item.product.id}}" class="text-decoration-none text-dark fw-semibold small d-block mb-1" th:text="${item.product.name}">Tên sản phẩm</a>
+                    <span class="badge bg-light text-muted border small" th:text="${item.product.category.name}">Danh mục</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Price -->
+              <div class="col-4 col-md-2 text-md-center">
+                <span class="fw-semibold text-secondary"
+                      th:text="${#numbers.formatDecimal(item.product.price, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</span>
+              </div>
+
+              <!-- Quantity Form -->
+              <div class="col-4 col-md-2">
+                <form th:action="@{/cart/update}" method="post" class="d-inline-flex justify-content-center">
+                  <input type="hidden" name="productId" th:value="${item.product.id}">
+                  <div class="input-group input-group-sm" style="max-width: 110px;">
+                    <button class="btn btn-outline-secondary" type="submit" name="quantity" th:value="${item.quantity - 1}">-</button>
+                    <input type="text" class="form-control text-center" th:value="${item.quantity}" readonly>
+                    <button class="btn btn-outline-secondary" type="submit" name="quantity" th:value="${item.quantity + 1}">+</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Subtotal -->
+              <div class="col-4 col-md-2 text-md-center">
+                <span class="fw-bold text-danger"
+                      th:text="${#numbers.formatDecimal(item.subTotal, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</span>
+              </div>
+
+              <!-- Action Delete -->
+              <div class="col-12 col-md-1 text-end text-md-center">
+                <form th:action="@{'/cart/remove/' + ${item.product.id}}" method="post" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Checkout Summary Footer -->
+        <div class="bg-white rounded-3 p-3 shadow-sm d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <form th:action="@{/cart/clear}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?');">
+              <button type="submit" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-trash me-1"></i>Xóa tất cả
+              </button>
+            </form>
+            <a th:href="@{/}" class="btn btn-link text-decoration-none text-muted btn-sm ms-2">
+              <i class="bi bi-arrow-left me-1"></i>Tiếp tục mua hàng
+            </a>
+          </div>
+
+          <div class="d-flex align-items-center gap-4">
+            <div>
+              <span class="text-secondary small">Tổng thanh toán (<span th:text="${cartCount}">0</span> sản phẩm): </span>
+              <span class="fs-4 fw-bold text-danger"
+                    th:text="${#numbers.formatDecimal(totalAmount, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</span>
+            </div>
+            <div th:if="${currentUser != null && currentUser.role == 1}">
+              <button class="btn btn-secondary px-4 py-2 fw-bold shadow-sm" disabled title="Tài khoản Quản trị viên không được phép mua hàng">
+                <i class="bi bi-shield-slash me-1"></i>Admin Không Thể Mua Hàng
+              </button>
+            </div>
+            <a th:unless="${currentUser != null && currentUser.role == 1}" th:href="@{/checkout}" class="btn btn-polyshop-orange px-5 py-2 fw-bold shadow-sm">
+              MUA HÀNG
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer Fragment -->
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <div th:fragment="navbar">
+    <!-- PolyShop Top Bar -->
+    <div class="polyshop-top-bar">
+      <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-3 align-items-center">
+          <a th:href="${currentUser != null && (currentUser.role == 2 || currentUser.role == 1)} ? @{/seller/dashboard} : @{/seller}" class="text-white text-decoration-none"><i class="bi bi-shop me-1"></i>Kênh Người Bán</a>
+          <span class="text-white-50">|</span>
+          <span><i class="bi bi-phone me-1"></i>Tải ứng dụng</span>
+          <span class="text-white-50">|</span>
+          <span>Kết nối</span>
+          <i class="bi bi-facebook"></i>
+          <i class="bi bi-instagram"></i>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+          <span><i class="bi bi-bell me-1"></i>Thông báo</span>
+          <span><i class="bi bi-question-circle me-1"></i>Hỗ trợ</span>
+          <span class="text-white-50">|</span>
+
+          <!-- If Not Logged In -->
+          <th:block th:if="${currentUser == null}">
+            <a th:href="@{/register}" class="fw-semibold">Đăng Ký</a>
+            <span class="text-white-50">|</span>
+            <a th:href="@{/login}" class="fw-semibold">Đăng Nhập</a>
+          </th:block>
+
+          <!-- If Logged In -->
+          <th:block th:if="${currentUser != null}">
+            <div class="dropdown">
+              <a class="dropdown-toggle text-white fw-bold text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1"></i>
+                <span th:text="${currentUser.name}">Người dùng</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item text-dark" th:href="@{/user/profile}"><i class="bi bi-person me-2 text-danger"></i>Hồ sơ tài khoản</a></li>
+                <li><a class="dropdown-item text-dark" th:href="@{/user/orders}"><i class="bi bi-bag-check me-2 text-success"></i>Đơn Mua của tôi</a></li>
+                
+                <!-- Phân quyền hiển thị theo Role -->
+                <li th:if="${currentUser.role == 0}"><hr class="dropdown-divider"></li>
+                <li th:if="${currentUser.role == 0}"><a class="dropdown-item text-primary" th:href="@{/seller}"><i class="bi bi-shop me-2"></i>Đăng Ký Bán Hàng</a></li>
+
+                <li th:if="${currentUser.role == 2}"><hr class="dropdown-divider"></li>
+                <li th:if="${currentUser.role == 2}"><a class="dropdown-item text-danger fw-bold" th:href="@{/seller/dashboard}"><i class="bi bi-shop me-2"></i>Kênh Người Bán</a></li>
+                <li th:if="${currentUser.role == 2}"><a class="dropdown-item text-dark" th:href="@{/seller/profile}"><i class="bi bi-person-badge me-2 text-warning"></i>Hồ Sơ Gian Hàng</a></li>
+                <li th:if="${currentUser.role == 2}"><a class="dropdown-item text-dark" th:href="@{'/shop/' + ${currentUser.id}}"><i class="bi bi-eye me-2 text-primary"></i>Xem Shop của tôi</a></li>
+
+                <li th:if="${currentUser.role == 1}"><hr class="dropdown-divider"></li>
+                <li th:if="${currentUser.role == 1}"><a class="dropdown-item text-danger fw-semibold" th:href="@{/seller/dashboard}"><i class="bi bi-shop me-2"></i>Kênh Người Bán</a></li>
+                <li th:if="${currentUser.role == 1}"><a class="dropdown-item text-dark" th:href="@{/seller/profile}"><i class="bi bi-person-badge me-2 text-warning"></i>Hồ Sơ Gian Hàng</a></li>
+                <li th:if="${currentUser.role == 1}"><a class="dropdown-item text-danger fw-bold" th:href="@{/admin}"><i class="bi bi-shield-lock-fill me-2"></i>Quản trị Hệ Thống (Admin)</a></li>
+
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-secondary" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>Đăng Xuất</a></li>
+              </ul>
+            </div>
+          </th:block>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="polyshop-header">
+      <div class="container d-flex align-items-center justify-content-between">
+        <!-- Logo -->
+        <a th:href="@{/}" class="polyshop-logo">
+          <i class="bi bi-bag-heart-fill"></i>
+          <span>PolyShop</span>
+        </a>
+
+        <!-- Search Bar -->
+        <div class="flex-grow-1 mx-4" style="max-width: 720px;">
+          <form th:action="@{/search}" method="get" class="polyshop-search-box">
+            <input type="text" name="keyword" th:value="${searchKeyword}" placeholder="PolyShop bao ship 0Đ - Tìm kiếm sản phẩm, thương hiệu..." required>
+            <button type="submit">
+              <i class="bi bi-search me-1"></i>
+            </button>
+          </form>
+          <div class="d-flex gap-3 mt-1 text-white-50" style="font-size: 11px; padding-left: 4px;">
+            <a th:href="@{/category/1}" class="text-white-50 text-decoration-none">Điện thoại</a>
+            <a th:href="@{/category/2}" class="text-white-50 text-decoration-none">Laptop</a>
+            <a th:href="@{/category/3}" class="text-white-50 text-decoration-none">Áo thun</a>
+            <a th:href="@{/category/4}" class="text-white-50 text-decoration-none">Váy nữ</a>
+            <a th:href="@{/category/5}" class="text-white-50 text-decoration-none">Phụ kiện</a>
+          </div>
+        </div>
+
+        <!-- Cart Icon -->
+        <div class="d-flex align-items-center">
+          <a th:href="@{/cart}" class="polyshop-cart-icon-btn position-relative" title="Giỏ hàng">
+            <i class="bi bi-cart3"></i>
+            <span class="polyshop-cart-badge" th:text="${cartCount ?: 0}">0</span>
+          </a>
+        </div>
+      </div>
+    </header>
+  </div>
+</body>
+</html>
