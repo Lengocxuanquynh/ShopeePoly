@@ -32,14 +32,23 @@ public class CartSessionListener implements HttpSessionListener {
 	@Autowired
 	private CartDetailServices cartDetailServices;
 
-	@Autowired(required = false)
-	private HttpServletRequest request;
-
 	@Autowired
 	private UserJPA userJPA;
 
 	@Autowired
 	private ProductServices productServices;
+
+	private HttpServletRequest getCurrentHttpRequest() {
+		try {
+			org.springframework.web.context.request.RequestAttributes attrs = 
+					org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+			if (attrs instanceof org.springframework.web.context.request.ServletRequestAttributes servletAttrs) {
+				return servletAttrs.getRequest();
+			}
+		} catch (Exception ignored) {
+		}
+		return null;
+	}
 
 	@Override
 	public void sessionCreated(HttpSessionEvent se) {
@@ -47,8 +56,9 @@ public class CartSessionListener implements HttpSessionListener {
 		Map<Integer, Integer> cartMap = new HashMap<>();
 
 		try {
-			if (request != null) {
-				String userId = Utils.getCookieValue(Utils.COOKIE_KEY_USER_ID, request);
+			HttpServletRequest currentReq = getCurrentHttpRequest();
+			if (currentReq != null) {
+				String userId = Utils.getCookieValue(Utils.COOKIE_KEY_USER_ID, currentReq);
 				if (userId != null) {
 					List<CartDetail> cartDetails = cartDetailServices.getCartsByUserId(Integer.parseInt(userId));
 					for (CartDetail cartDetail : cartDetails) {
@@ -77,8 +87,9 @@ public class CartSessionListener implements HttpSessionListener {
 
 		try {
 			String userId = null;
-			if (request != null) {
-				userId = Utils.getCookieValue(Utils.COOKIE_KEY_USER_ID, request);
+			HttpServletRequest currentReq = getCurrentHttpRequest();
+			if (currentReq != null) {
+				userId = Utils.getCookieValue(Utils.COOKIE_KEY_USER_ID, currentReq);
 			}
 			if (userId == null && session.getAttribute("user") != null) {
 				User sessionUser = (User) session.getAttribute("user");
