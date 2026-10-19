@@ -7,12 +7,26 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" th:href="@{/static/css/polyshop.css}">
+  <style>
+    .admin-navbar .nav-link {
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.65rem;
+    }
+    .admin-navbar .navbar-brand {
+      white-space: nowrap;
+      font-size: 1.1rem;
+    }
+  </style>
 </head>
 <body class="bg-light">
 
   <!-- Admin Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
-    <div class="container">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-2 admin-navbar">
+    <div class="container-fluid px-4">
       <a class="navbar-brand fw-bold text-danger d-flex align-items-center gap-2" th:href="@{/admin}">
         <i class="bi bi-shield-lock-fill"></i>
         <span>PolyShop Super Admin</span>
@@ -24,10 +38,10 @@
       <div class="collapse navbar-collapse" id="adminNav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" th:href="@{/admin}"><i class="bi bi-speedometer2 me-1"></i>Tổng Quan</a>
+            <a class="nav-link active fw-bold text-white" th:href="@{/admin}"><i class="bi bi-speedometer2 me-1"></i>Tổng Quan</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" th:href="@{/admin/product-form}"><i class="bi bi-box-seam me-1"></i>Sản Phẩm</a>
+            <a class="nav-link" th:href="@{/admin/products}"><i class="bi bi-box-seam me-1"></i>Kiểm Duyệt Sản Phẩm</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" th:href="@{/admin/category-form}"><i class="bi bi-tags me-1"></i>Danh Mục</a>
@@ -41,15 +55,13 @@
           <li class="nav-item">
             <a class="nav-link text-warning" th:href="@{/admin/seller-requests}">
               <i class="bi bi-shop me-1"></i>Duyệt Người Bán
-              <span th:if="${pendingSellerCount > 0}" class="badge bg-danger ms-1" th:text="${pendingSellerCount}"></span>
+              <span th:if="${pendingSellerCount != null && pendingSellerCount > 0}" class="badge bg-danger ms-1" th:text="${pendingSellerCount}"></span>
             </a>
           </li>
         </ul>
-        <div class="d-flex align-items-center gap-3">
-          <a th:href="@{/}" class="btn btn-outline-light btn-sm">
-            <i class="bi bi-shop me-1"></i>Xem Trang Khách Hàng
-          </a>
-          <a th:href="@{/logout}" class="btn btn-danger btn-sm">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-white-50 small me-2 d-none d-md-inline"><i class="bi bi-person-circle me-1"></i>Super Admin</span>
+          <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm text-white">
             <i class="bi bi-box-arrow-right me-1"></i>Đăng Xuất
           </a>
         </div>
@@ -126,8 +138,8 @@
           <div class="bg-white p-4 rounded-3 shadow-sm">
             <h5 class="fw-bold text-dark mb-3"><i class="bi bi-lightning-charge text-warning me-2"></i>Thao Tác Nhanh</h5>
             <div class="d-flex flex-wrap gap-2">
-              <a th:href="@{/admin/product-form}" class="btn btn-polyshop-orange">
-                <i class="bi bi-plus-circle me-1"></i>Thêm Sản Phẩm Mới
+              <a th:href="@{/admin/products}" class="btn btn-polyshop-orange">
+                <i class="bi bi-shield-check me-1"></i>Kiểm Duyệt Sản Phẩm
               </a>
               <a th:href="@{/admin/category-form}" class="btn btn-outline-secondary">
                 <i class="bi bi-folder-plus me-1"></i>Thêm Danh Mục
@@ -150,8 +162,8 @@
       <!-- Recent Products Preview -->
       <div class="bg-white p-4 rounded-3 shadow-sm">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-boxes text-danger me-2"></i>Danh Sách Sản Phẩm Trong Cửa Hàng</h5>
-          <a th:href="@{/admin/product-form}" class="btn btn-sm btn-outline-danger">Xem & Thêm mới</a>
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-shield-shaded text-danger me-2"></i>Sản Phẩm Cần Giám Sát</h5>
+          <a th:href="@{/admin/products}" class="btn btn-sm btn-outline-danger">Xem Toàn Bộ Sàn</a>
         </div>
 
         <div class="table-responsive">
@@ -161,16 +173,17 @@
                 <th>ID</th>
                 <th>Hình ảnh</th>
                 <th>Tên sản phẩm</th>
+                <th>Shop / Người bán</th>
                 <th>Danh mục</th>
                 <th>Giá bán</th>
                 <th>Kho</th>
                 <th>Trạng thái</th>
-                <th class="text-end">Hành động</th>
+                <th class="text-end">Kiểm duyệt</th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="p : ${products}">
-                <td class="fw-bold" th:text="${p.id}">1</td>
+                <td class="fw-bold" th:text="'#' + ${p.id}">#1</td>
                 <td>
                   <img th:if="${p.images != null && !p.images.isEmpty()}"
                        th:src="@{'/uploads/' + ${p.images[0].name}}"
@@ -180,19 +193,45 @@
                        src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80"
                        class="rounded border" style="width: 40px; height: 40px; object-fit: cover;">
                 </td>
-                <td class="fw-semibold" th:text="${p.name}">Sản phẩm</td>
+                <td>
+                  <div class="fw-semibold text-dark" th:text="${p.name}">Sản phẩm</div>
+                  <a th:href="@{'/product/' + ${p.id}}" target="_blank" class="text-muted small text-decoration-none">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Xem ngoài sàn
+                  </a>
+                </td>
+                <td>
+                  <span th:if="${p.seller != null}" class="badge bg-light text-dark border">
+                    <i class="bi bi-shop text-danger me-1"></i><span th:text="${p.seller.name}">Shop</span>
+                  </span>
+                  <span th:if="${p.seller == null}" class="badge bg-warning-subtle text-warning-emphasis border border-warning">
+                    Chưa gán
+                  </span>
+                </td>
                 <td th:text="${p.category != null ? p.category.name : 'N/A'}">Danh mục</td>
                 <td class="fw-bold text-danger" th:text="${#numbers.formatDecimal(p.price, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</td>
                 <td th:text="${p.quantity}">10</td>
                 <td>
-                  <span th:if="${p.status}" class="badge bg-success">Hiển thị</span>
-                  <span th:unless="${p.status}" class="badge bg-secondary">Ẩn</span>
+                  <span th:if="${p.status}" class="badge bg-success-subtle text-success border border-success">Hiển thị</span>
+                  <span th:unless="${p.status}" class="badge bg-danger-subtle text-danger border border-danger">Đã khóa / Ẩn</span>
                 </td>
                 <td class="text-end">
-                  <a th:href="@{'/admin/product-form/' + ${p.id}}" class="btn btn-sm btn-outline-primary me-1">Sửa</a>
-                  <form th:action="@{'/admin/product/delete/' + ${p.id}}" method="post" class="d-inline"
-                        onsubmit="return confirm('Bạn có chắc muốn xóa/ẩn sản phẩm này?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                  <form th:if="${p.status}" th:action="@{'/admin/product/toggle-status/' + ${p.id}}" method="post" class="d-inline"
+                        onsubmit="return confirm('Bạn có chắc muốn KHÓA / ẨN sản phẩm này?');">
+                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Khóa vi phạm">
+                      <i class="bi bi-lock-fill me-1"></i>Khóa
+                    </button>
+                  </form>
+                  <form th:unless="${p.status}" th:action="@{'/admin/product/toggle-status/' + ${p.id}}" method="post" class="d-inline"
+                        onsubmit="return confirm('Bạn có chắc muốn MỞ KHÓA sản phẩm này?');">
+                    <button type="submit" class="btn btn-sm btn-outline-success" title="Mở khóa">
+                      <i class="bi bi-unlock-fill me-1"></i>Mở khóa
+                    </button>
+                  </form>
+                  <form th:action="@{'/admin/product/delete/' + ${p.id}}" method="post" class="d-inline ms-1"
+                        onsubmit="return confirm('Bạn có chắc muốn XÓA VĨNH VIỄN sản phẩm này?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                      <i class="bi bi-trash"></i>
+                    </button>
                   </form>
                 </td>
               </tr>

@@ -26,6 +26,9 @@ public class AdminSellerController {
 	@Autowired
 	private UserServices userServices;
 
+	@Autowired
+	private com.fpoly.java5demo.services.NotificationServices notificationServices;
+
 	@GetMapping("/seller-requests")
 	public String listSellerRequests(Model model) {
 		List<SellerRequest> requests = sellerRequestJPA.findAllByOrderByCreatedAtDesc();
@@ -52,6 +55,14 @@ public class AdminSellerController {
 		if (user != null) {
 			user.setRole(2);
 			userServices.save(user);
+
+			notificationServices.createNotification(
+					user,
+					"Đăng ký Người Bán thành công!",
+					String.format("Chúc mừng! Gian hàng '%s' của bạn đã được Super Admin phê duyệt. Bạn có thể bắt đầu đăng bán sản phẩm ngay.", req.getShopName()),
+					"/seller/dashboard",
+					"SELLER_REQUEST"
+			);
 		}
 
 		redirectAttributes.addFlashAttribute("successMessage",
@@ -70,6 +81,16 @@ public class AdminSellerController {
 
 		req.setStatus(2); // 2 = Từ chối
 		sellerRequestJPA.save(req);
+
+		if (req.getUser() != null) {
+			notificationServices.createNotification(
+					req.getUser(),
+					"Yêu cầu mở Shop bị từ chối",
+					String.format("Yêu cầu đăng ký mở gian hàng '%s' của bạn đã bị Super Admin từ chối. Vui lòng liên hệ hỗ trợ hoặc cập nhật lại thông tin hồ sơ.", req.getShopName()),
+					"/seller-register",
+					"SELLER_REQUEST"
+			);
+		}
 
 		redirectAttributes.addFlashAttribute("errorMessage",
 				String.format("Đã từ chối hồ sơ đăng ký mở gian hàng '%s'.", req.getShopName()));

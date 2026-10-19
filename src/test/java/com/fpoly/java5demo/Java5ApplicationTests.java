@@ -486,4 +486,30 @@ class Java5ApplicationTests {
 		assertNotNull(reloadedOrder);
 		assertEquals(1, reloadedOrder.getStatus(), "Trạng thái đơn hàng sau khi Seller duyệt phải là 1 (Đã xác nhận & đóng gói)");
 	}
+
+	@Test
+	public void testAdminToggleProductStatusModeration() {
+		List<Product> prods = productServices.getList();
+		assertFalse(prods.isEmpty(), "Cần có ít nhất 1 sản phẩm để kiểm thử kiểm duyệt");
+
+		Product testProduct = prods.get(0);
+		int prodId = testProduct.getId();
+		boolean originalStatus = testProduct.isStatus();
+
+		// 1. Admin bấm Khóa / Ẩn sản phẩm vi phạm
+		boolean success1 = productServices.toggleStatus(prodId);
+		assertTrue(success1, "Thao tác đổi trạng thái kiểm duyệt phải thành công");
+
+		Product afterToggle1 = productServices.findById(prodId);
+		assertNotNull(afterToggle1);
+		assertEquals(!originalStatus, afterToggle1.isStatus(), "Trạng thái sản phẩm phải đảo ngược sau khi Admin can thiệp");
+
+		// 2. Admin bấm Mở khóa hiển thị lại cho sản phẩm
+		boolean success2 = productServices.toggleStatus(prodId);
+		assertTrue(success2, "Thao tác mở khóa lại phải thành công");
+
+		Product afterToggle2 = productServices.findById(prodId);
+		assertNotNull(afterToggle2);
+		assertEquals(originalStatus, afterToggle2.isStatus(), "Trạng thái sản phẩm phải được khôi phục về ban đầu");
+	}
 }

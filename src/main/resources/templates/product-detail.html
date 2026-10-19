@@ -106,8 +106,22 @@
               </div>
             </div>
 
-            <!-- Add to Cart / Buy Form -->
-            <form th:action="@{/cart/add}" method="post">
+            <!-- Self-Purchase Notice for Shop Owner -->
+            <div th:if="${currentUser != null && product.seller != null && currentUser.id == product.seller.id}" class="alert alert-warning border-warning shadow-sm mb-4">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-shield-exclamation text-warning fs-4"></i>
+                <h6 class="fw-bold mb-0 text-dark">Sản Phẩm Thuộc Gian Hàng Của Bạn</h6>
+              </div>
+              <p class="small text-muted mb-3">
+                Theo quy chế sàn TMĐT PolyShop, Người Bán không được phép tự mua hàng của chính mình. Bạn có thể xem và chỉnh sửa thông tin sản phẩm qua Kênh Người Bán.
+              </p>
+              <a th:href="@{'/seller/product-form/' + ${product.id}}" class="btn btn-warning fw-bold text-dark btn-sm">
+                <i class="bi bi-pencil-square me-1"></i>Quản Lý & Chỉnh Sửa Sản Phẩm
+              </a>
+            </div>
+
+            <!-- Add to Cart / Buy Form (Disabled for Shop Owner) -->
+            <form th:unless="${currentUser != null && product.seller != null && currentUser.id == product.seller.id}" th:action="@{/cart/add}" method="post">
               <input type="hidden" name="productId" th:value="${product.id}">
 
               <!-- Quantity Selector -->
@@ -159,7 +173,7 @@
         <div class="row align-items-center g-3">
           <!-- Left: Shop Avatar & Name & Action Buttons -->
           <div class="col-lg-5 d-flex align-items-center gap-3 border-end pe-lg-4">
-            <div class="position-relative">
+            <a th:href="@{'/shop/' + ${product.seller != null ? product.seller.id : 1}}" class="position-relative text-decoration-none flex-shrink-0" title="Xem hồ sơ gian hàng">
               <img th:if="${shopInfo != null && shopInfo.avatar != null && !shopInfo.avatar.isEmpty()}"
                    th:src="@{'/uploads/' + ${shopInfo.avatar}}"
                    class="rounded-circle border border-2 border-danger" style="width: 72px; height: 72px; object-fit: cover;"
@@ -170,25 +184,23 @@
                    class="rounded-circle border border-2 border-danger" style="width: 72px; height: 72px; object-fit: cover;"
                    alt="Shop Avatar Default">
               <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-danger" style="font-size: 8px;">Mall</span>
-            </div>
+            </a>
             <div class="flex-grow-1">
-              <h6 class="fw-bold text-dark mb-1"
-                  th:text="${shopInfo != null ? shopInfo.shopName : (product.seller != null ? product.seller.name : 'PolyShop Official')}">
-                Tên Gian Hàng
-              </h6>
+              <a th:href="@{'/shop/' + ${product.seller != null ? product.seller.id : 1}}" class="text-decoration-none">
+                <h6 class="fw-bold text-dark mb-1 text-hover-danger d-flex align-items-center gap-1">
+                  <span th:text="${shopInfo != null ? shopInfo.shopName : (product.seller != null ? product.seller.name : 'Poly Fashion Official')}">Tên Gian Hàng</span>
+                  <i class="bi bi-patch-check-fill text-primary small" title="Gian hàng chính hãng xác thực"></i>
+                </h6>
+              </a>
               <div class="text-muted small mb-2">
                 <i class="bi bi-clock-history me-1"></i>Online 5 phút trước
               </div>
               <div class="d-flex gap-2">
-                <a th:if="${product.seller != null}" th:href="@{'/shop/' + ${product.seller.id}}"
-                   class="btn btn-sm btn-polyshop-outline px-3 d-flex align-items-center gap-1">
+                <a th:href="@{'/shop/' + ${product.seller != null ? product.seller.id : 1}}"
+                   class="btn btn-sm btn-polyshop-outline px-3 d-flex align-items-center gap-1 fw-semibold">
                   <i class="bi bi-shop"></i>Xem Shop
                 </a>
-                <a th:if="${product.seller == null}" th:href="@{/}"
-                   class="btn btn-sm btn-polyshop-outline px-3 d-flex align-items-center gap-1">
-                  <i class="bi bi-shop"></i>Xem Shop
-                </a>
-                <a th:if="${shopInfo != null && shopInfo.phone != null}" th:href="'tel:' + ${shopInfo.phone}"
+                <a th:if="${shopInfo != null && shopInfo.phone != null && !shopInfo.phone.isEmpty()}" th:href="'tel:' + ${shopInfo.phone}"
                    class="btn btn-sm btn-outline-secondary px-3 d-flex align-items-center gap-1">
                   <i class="bi bi-chat-dots"></i>Chat Ngay
                 </a>

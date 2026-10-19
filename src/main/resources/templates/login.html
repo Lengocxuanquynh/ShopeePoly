@@ -92,11 +92,52 @@
             </form>
 
             <!-- Test account hints for grading / testing -->
-            <div class="p-2 rounded bg-light border small text-muted mb-3">
-              <div class="fw-bold text-dark mb-1"><i class="bi bi-info-circle me-1"></i>Tài khoản mẫu:</div>
-              <div>&bull; <strong>Admin:</strong> <code>admin</code> / <code>123456</code></div>
-              <div>&bull; <strong>Khách hàng:</strong> <code>user</code> / <code>123456</code></div>
+            <div class="p-3 rounded bg-light border small mb-3">
+              <div class="fw-bold text-dark mb-2 d-flex align-items-center justify-content-between">
+                <span><i class="bi bi-person-badge-fill text-danger me-1"></i>Tài khoản mẫu (Bấm để điền):</span>
+              </div>
+              <div class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center justify-content-between bg-white p-2 rounded border">
+                  <div>
+                    <span class="badge bg-danger me-1">Admin</span>
+                    <span class="fw-bold text-dark user-select-all">admin</span> / <span class="user-select-all">123456</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" onclick="fillAccount('admin', '123456')">Điền</button>
+                </div>
+                <div class="d-flex align-items-center justify-content-between bg-white p-2 rounded border">
+                  <div>
+                    <span class="badge bg-warning text-dark me-1">Người bán 1</span>
+                    <span class="fw-bold text-dark user-select-all">seller</span> / <span class="user-select-all">123456</span>
+                    <span class="text-muted small ms-1">(Fashion)</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-2 fw-semibold" onclick="fillAccount('seller', '123456')">Điền</button>
+                </div>
+                <div class="d-flex align-items-center justify-content-between bg-white p-2 rounded border">
+                  <div>
+                    <span class="badge bg-primary me-1">Người bán 2</span>
+                    <span class="fw-bold text-dark user-select-all">shopwatch</span> / <span class="user-select-all">123456</span>
+                    <span class="text-muted small ms-1">(Đồng hồ)</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" onclick="fillAccount('shopwatch', '123456')">Điền</button>
+                </div>
+                <div class="d-flex align-items-center justify-content-between bg-white p-2 rounded border">
+                  <div>
+                    <span class="badge bg-secondary me-1">Người mua</span>
+                    <span class="fw-bold text-dark user-select-all">user</span> / <span class="user-select-all">123456</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 fw-semibold" onclick="fillAccount('user', '123456')">Điền</button>
+                </div>
+              </div>
             </div>
+
+            <script>
+              function fillAccount(u, p) {
+                const uField = document.getElementById('username');
+                const pField = document.getElementById('password');
+                if (uField) uField.value = u;
+                if (pField) pField.value = p;
+              }
+            </script>
 
             <div class="text-center small text-muted">
               Bạn mới biết đến PolyShop?

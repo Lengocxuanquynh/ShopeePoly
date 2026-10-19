@@ -26,7 +26,7 @@ public class AdminUserController {
 	@Autowired
 	private UserServices userServices;
 
-	@GetMapping({ "/users", "/user-form" })
+	@GetMapping({ "/users", "/user-form", "/user", "/user-list" })
 	public String userForm(Model model) {
 		model.addAttribute("bean", new UserFormBean());
 		model.addAttribute("users", userServices.getAllUsers());
@@ -87,6 +87,12 @@ public class AdminUserController {
 		User user = userServices.getUserInfoById(id);
 		if (user == null) {
 			redirectAttributes.addFlashAttribute("errorMessage", "Người dùng không tồn tại!");
+			return "redirect:/admin/user-form";
+		}
+
+		if ("admin".equalsIgnoreCase(user.getUsername()) || user.getId() == 1) {
+			redirectAttributes.addFlashAttribute("errorMessage",
+					"Không thể khóa hoặc xóa tài khoản Super Admin chính của hệ thống!");
 			return "redirect:/admin/user-form";
 		}
 

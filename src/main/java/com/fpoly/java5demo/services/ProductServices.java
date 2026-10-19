@@ -162,6 +162,22 @@ public class ProductServices {
 		}
 	}
 
+	public boolean toggleStatus(int id) {
+		try {
+			Optional<Product> prodOptional = productJPA.findById(id);
+			if (prodOptional.isPresent()) {
+				Product product = prodOptional.get();
+				product.setStatus(!product.isStatus());
+				productJPA.save(product);
+				return true;
+			}
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 	public Product findById(int id) {
 		return productJPA.findById(id).orElse(null);
 	}

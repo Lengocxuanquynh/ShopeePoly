@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 @Data
 public class RegisterBean {
 	@NotBlank(message = "Tên đăng nhập không được để trống")
+	@jakarta.validation.constraints.Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "Tên đăng nhập không được chứa khoảng cách (dấu cách) hoặc ký tự đặc biệt")
+	@Length(min = 3, max = 50, message = "Tên đăng nhập phải từ 3 đến 50 ký tự")
 	private String username;
 
 	@NotBlank(message = "Mật khẩu không được để trống")

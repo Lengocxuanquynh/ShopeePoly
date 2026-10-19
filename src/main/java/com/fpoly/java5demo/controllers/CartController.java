@@ -27,6 +27,9 @@ public class CartController {
 	@Autowired
 	private UserServices userServices;
 
+	@Autowired
+	private com.fpoly.java5demo.services.ProductServices productServices;
+
 	@GetMapping("")
 	public String viewCart(Model model, HttpServletRequest request, HttpSession session) {
 		User currentUser = userServices.getLoggedInUser(request, session);
@@ -48,6 +51,15 @@ public class CartController {
 					"Tài khoản Quản trị viên (Admin) không được phép thực hiện chức năng mua hàng!");
 			return "redirect:/cart";
 		}
+
+		com.fpoly.java5demo.entities.Product product = productServices.findById(productId);
+		if (product != null && product.getSeller() != null && currentUser != null
+				&& product.getSeller().getId() == currentUser.getId()) {
+			redirectAttributes.addFlashAttribute("errorMessage",
+					"Bạn không thể tự mua hoặc thêm vào giỏ sản phẩm từ chính gian hàng của mình!");
+			return "redirect:/product/" + productId;
+		}
+
 		cartDetailServices.addToCart(productId, quantity);
 		if (buyNow) {
 			return "redirect:/checkout";
@@ -64,6 +76,15 @@ public class CartController {
 					"Tài khoản Quản trị viên (Admin) không được phép thực hiện chức năng mua hàng!");
 			return "redirect:/cart";
 		}
+
+		com.fpoly.java5demo.entities.Product product = productServices.findById(productId);
+		if (product != null && product.getSeller() != null && currentUser != null
+				&& product.getSeller().getId() == currentUser.getId()) {
+			redirectAttributes.addFlashAttribute("errorMessage",
+					"Bạn không thể tự mua hoặc thêm vào giỏ sản phẩm từ chính gian hàng của mình!");
+			return "redirect:/product/" + productId;
+		}
+
 		cartDetailServices.addToCart(productId, 1);
 		return "redirect:/cart";
 	}

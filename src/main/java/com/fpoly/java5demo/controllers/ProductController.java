@@ -49,100 +49,67 @@ public class ProductController {
 		return "admin/dashboard";
 	}
 
-	@GetMapping("/products")
-	public String listProducts() {
-		return "redirect:/admin/product-form";
-	}
+	@GetMapping({ "/products", "/product-form" })
+	public String listProducts(Model model) {
+		List<Product> products = productServices.getList();
+		long activeCount = products.stream().filter(Product::isStatus).count();
+		long inactiveCount = products.size() - activeCount;
 
-	@GetMapping("/product-form")
-	public String productForm(Model model) {
-		model.addAttribute("bean", new ProductFormBean());
-		model.addAttribute("products", productServices.getList());
-		return "admin/product-form";
+		model.addAttribute("products", products);
+		model.addAttribute("activeCount", activeCount);
+		model.addAttribute("inactiveCount", inactiveCount);
+		return "admin/products";
 	}
 
 	@GetMapping("/product-form/{id}")
-	public String productEdit(@PathVariable("id") int id, Model model) {
-		Product product = productServices.findById(id);
-		if (product == null) {
-			return "redirect:/admin/product-form";
-		}
-
-		ProductFormBean bean = new ProductFormBean();
-		bean.setId(product.getId());
-		bean.setName(product.getName());
-		bean.setPrice(product.getPrice());
-		bean.setQuantity(product.getQuantity());
-		bean.setStatus(product.isStatus() ? 1 : 2);
-		if (product.getCategory() != null) {
-			bean.setCategory(product.getCategory().getId());
-		}
-
-		model.addAttribute("bean", bean);
-		model.addAttribute("product", product);
-		model.addAttribute("products", productServices.getList());
-		return "admin/product-form";
+	public String productEditNotice(@PathVariable("id") int id, RedirectAttributes redirectAttributes) {
+		redirectAttributes.addFlashAttribute("errorMessage",
+				"Sản phẩm do Người bán (Shop) tự quản lý thông tin và giá bán. SuperAdmin chỉ có quyền kiểm duyệt hoặc khóa/mở khóa hiển thị!");
+		return "redirect:/admin/products";
 	}
 
 	@PostMapping("/product-form")
-	public String productSave(@Valid @ModelAttribute("bean") ProductFormBean bean, Errors errors,
-			Model model, RedirectAttributes redirectAttributes) {
-		if (errors.hasErrors()) {
-			model.addAttribute("products", productServices.getList());
-			return "admin/product-form";
+	public String productSaveNotice(RedirectAttributes redirectAttributes) {
+		redirectAttributes.addFlashAttribute("errorMessage",
+				"SuperAdmin không trực tiếp thêm hoặc sửa sản phẩm của Shop. Người bán sẽ đăng bán sản phẩm qua Kênh Người Bán (/seller)!");
+		return "redirect:/admin/products";
+	}
+
+	@PostMapping("/product/toggle-status/{id}")
+	public String toggleProductStatus(@PathVariable("id") int id, RedirectAttributes redirectAttributes) {
+		Product product = productServices.findById(id);
+		if (product == null) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy sản phẩm!");
+			return "redirect:/admin/products";
 		}
 
-		Category category = categoryServices.getById(bean.getCategory());
-		if (category == null) {
-			model.addAttribute("errorMessage", "Vui lòng chọn danh mục hợp lệ!");
-			model.addAttribute("products", productServices.getList());
-			return "admin/product-form";
-		}
-
-		Product product;
-		boolean isUpdate = (bean.getId() != null && bean.getId() > 0);
-
-		if (isUpdate) {
-			product = productServices.findById(bean.getId());
-			if (product == null) {
-				return "redirect:/admin/product-form";
+		boolean willLock = product.isStatus();
+		boolean success = productServices.toggleStatus(id);
+		if (success) {
+			if (willLock) {
+				redirectAttributes.addFlashAttribute("successMessage",
+						"Đã khóa/ẩn sản phẩm vi phạm: '" + product.getName() + "'!");
+			} else {
+				redirectAttributes.addFlashAttribute("successMessage",
+						"Đã mở khóa hiển thị cho sản phẩm: '" + product.getName() + "'!");
 			}
 		} else {
-			product = new Product();
+			redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật trạng thái kiểm duyệt sản phẩm!");
 		}
-
-		product.setName(bean.getName());
-		product.setPrice(bean.getPrice());
-		product.setQuantity(bean.getQuantity());
-		product.setStatus(bean.getStatus() == 1);
-		product.setCategory(category);
-
-		String error;
-		if (isUpdate) {
-			error = productServices.updateProduct(product, bean.getImages());
-		} else {
-			error = productServices.addProduct(product, bean.getImages());
-		}
-
-		if (error != null) {
-			model.addAttribute("errorMessage", error);
-			model.addAttribute("products", productServices.getList());
-			return "admin/product-form";
-		}
-
-		redirectAttributes.addFlashAttribute("successMessage", isUpdate ? "Cập nhật sản phẩm thành công!" : "Thêm mới sản phẩm thành công!");
-		return "redirect:/admin/product-form";
+		return "redirect:/admin/products";
 	}
 
 	@PostMapping("/product/delete/{id}")
 	public String productDelete(@PathVariable("id") int id, RedirectAttributes redirectAttributes) {
+		Product product = productServices.findById(id);
+		String prodName = (product != null) ? product.getName() : ("#" + id);
 		String error = productServices.remove(id);
 		if (error == null) {
-			redirectAttributes.addFlashAttribute("successMessage", "Xóa sản phẩm thành công!");
+			redirectAttributes.addFlashAttribute("successMessage", "Đã xóa vĩnh viễn sản phẩm vi phạm: '" + prodName + "'!");
 		} else {
 			redirectAttributes.addFlashAttribute("errorMessage", error);
 		}
-		return "redirect:/admin/product-form";
+		return "redirect:/admin/products";
 	}
 
 	@ModelAttribute("categories")

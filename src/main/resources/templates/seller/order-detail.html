@@ -44,7 +44,7 @@
         </ul>
         <div class="d-flex align-items-center gap-2">
           <a th:href="@{/}" class="btn btn-outline-light btn-sm">
-            <i class="bi bi-shop me-1"></i>Xem Trang Khách
+            <i class="bi bi-cart3 me-1"></i>Mua Hàng
           </a>
           <a th:if="${currentUser != null && currentUser.role == 1}" th:href="@{/admin}" class="btn btn-dark btn-sm">
             <i class="bi bi-shield-lock me-1"></i>Kênh Super Admin
@@ -100,30 +100,56 @@
         </div>
       </div>
 
-      <!-- Update Status Card -->
-      <div class="bg-white rounded-3 shadow-sm p-4 mb-4 border border-start border-4 border-danger">
-        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-box2-heart text-danger me-2"></i>Tiến Trình Xử Lý Của Người Bán</h5>
+      <!-- Update Status Card (Strict Sequential Transition - No Jumping) -->
+      <div th:if="${order.status < 4}" class="bg-white rounded-3 shadow-sm p-4 mb-4 border border-start border-4 border-danger">
+        <h5 class="fw-bold text-dark mb-2"><i class="bi bi-box2-heart text-danger me-2"></i>Tiến Trình Xử Lý Của Người Bán</h5>
+        <p class="text-muted small mb-3">Quy trình xử lý tuần tự (Không được nhảy cóc bước): <em>Chờ duyệt &rarr; Đóng gói &rarr; Giao hàng &rarr; Đã nhận &rarr; Hoàn tất</em>.</p>
 
         <form th:action="@{/seller/order/status}" method="post" class="row g-3 align-items-center">
           <input type="hidden" name="orderId" th:value="${order.id}">
 
-          <div class="col-md-6">
-            <select name="status" class="form-select">
-              <option value="0" th:selected="${order.status == 0}">0 - Chờ xác nhận (Người Mua mới đặt)</option>
-              <option value="1" th:selected="${order.status == 1}">1 - Đã duyệt (Đang đóng gói kiện hàng)</option>
-              <option value="2" th:selected="${order.status == 2}">2 - Đang giao hàng (Đã bàn giao cho Shipper)</option>
-              <option value="3" th:selected="${order.status == 3}">3 - Đã nhận hàng</option>
-              <option value="4" th:selected="${order.status == 4}">4 - Hoàn thành đơn hàng</option>
-              <option value="5" th:selected="${order.status == 5}">5 - Hủy đơn hàng (Hết hàng / Hủy theo yêu cầu)</option>
+          <div class="col-md-7">
+            <select name="status" class="form-select fw-semibold">
+              <!-- When Status = 0: Only allowed to move to 1 (No skipping to 2, 3, 4, 5) -->
+              <th:block th:if="${order.status == 0}">
+                <option value="1">1 - Phê duyệt đơn hàng & Bắt đầu đóng gói kiện hàng</option>
+              </th:block>
+
+              <!-- When Status = 1: Allowed to move to 2 (Shipping) or 5 (Cancel) -->
+              <th:block th:if="${order.status == 1}">
+                <option value="2">2 - Bàn giao đơn vị vận chuyển (Đang giao hàng)</option>
+                <option value="5" class="text-danger">5 - Hủy đơn hàng (Hết hàng / Không thể đáp ứng)</option>
+              </th:block>
+
+              <!-- When Status = 2: Allowed to move to 3 (Delivered) or 5 (Delivery Failed) -->
+              <th:block th:if="${order.status == 2}">
+                <option value="3">3 - Xác nhận giao thành công (Khách đã nhận hàng)</option>
+                <option value="5" class="text-danger">5 - Giao hàng thất bại / Hủy đơn hoàn hàng</option>
+              </th:block>
+
+              <!-- When Status = 3: Allowed to move to 4 (Completed) -->
+              <th:block th:if="${order.status == 3}">
+                <option value="4">4 - Đóng đơn và xác nhận Hoàn tất đơn hàng</option>
+              </th:block>
             </select>
           </div>
 
-          <div class="col-md-3">
-            <button type="submit" class="btn btn-polyshop-orange w-100 fw-semibold">
-              <i class="bi bi-check2-circle me-1"></i>Cập Nhật Tiến Trình
+          <div class="col-md-5">
+            <button type="submit" class="btn btn-polyshop-orange w-100 fw-bold">
+              <i class="bi bi-arrow-right-circle me-1"></i>Chuyển Sang Bước Tiếp Theo
             </button>
           </div>
         </form>
+      </div>
+
+      <!-- Completed / Cancelled Notice -->
+      <div th:if="${order.status >= 4}" class="alert alert-secondary border shadow-sm mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill text-success fs-4" th:if="${order.status == 4}"></i>
+        <i class="bi bi-x-circle-fill text-danger fs-4" th:if="${order.status == 5}"></i>
+        <div>
+          <strong class="d-block" th:text="${order.status == 4 ? 'Đơn hàng này đã hoàn thành!' : 'Đơn hàng này đã bị hủy!'}"></strong>
+          <span class="small text-muted">Tiến trình xử lý của đơn hàng đã kết thúc, không thể thay đổi thêm trạng thái.</span>
+        </div>
       </div>
 
       <!-- Order Details Card -->

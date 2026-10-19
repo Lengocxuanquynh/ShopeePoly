@@ -56,6 +56,16 @@ public class OrderController {
 			return "redirect:/cart";
 		}
 
+		for (CartItemBean ci : cartItems) {
+			if (ci.getProduct() != null && ci.getProduct().getSeller() != null
+					&& ci.getProduct().getSeller().getId() == currentUser.getId()) {
+				redirectAttributes.addFlashAttribute("errorMessage",
+						String.format("Sản phẩm '%s' thuộc chính gian hàng của bạn. Bạn không thể tự mua hàng của chính mình! Vui lòng xóa khỏi giỏ hàng.",
+								ci.getProduct().getName()));
+				return "redirect:/cart";
+			}
+		}
+
 		CheckoutBean bean = new CheckoutBean();
 		bean.setFullName(currentUser.getName());
 		if (currentUser.getPhone() != null && !currentUser.getPhone().trim().isEmpty()) {
@@ -92,6 +102,20 @@ public class OrderController {
 		List<CartItemBean> cartItems = cartDetailServices.getCartItems();
 		if (cartItems.isEmpty()) {
 			return "redirect:/cart";
+		}
+
+		for (CartItemBean ci : cartItems) {
+			if (ci.getProduct() != null && ci.getProduct().getSeller() != null
+					&& ci.getProduct().getSeller().getId() == currentUser.getId()) {
+				model.addAttribute("errorMessage",
+						String.format("Sản phẩm '%s' thuộc chính gian hàng của bạn. Bạn không thể tự mua hàng của chính mình! Vui lòng xóa khỏi giỏ hàng.",
+								ci.getProduct().getName()));
+				model.addAttribute("currentUser", currentUser);
+				model.addAttribute("cartItems", cartItems);
+				model.addAttribute("totalAmount", cartDetailServices.getTotalAmount());
+				model.addAttribute("cartCount", cartDetailServices.getTotalQuantity());
+				return "checkout";
+			}
 		}
 
 		if (errors.hasErrors()) {

@@ -28,18 +28,28 @@ public class UserServices {
 	private com.fpoly.java5demo.jpas.CartDetailJPA cartDetailJPA;
 
 	public String register(RegisterBean bean) {
-		if (userJPA.existsByUsername(bean.getUsername())) {
+		String username = bean.getUsername() != null ? bean.getUsername().trim() : "";
+		String email = bean.getEmail() != null ? bean.getEmail().trim() : "";
+		String name = bean.getName() != null ? bean.getName().trim() : "";
+
+		if (username.isEmpty()) {
+			return "Tên tài khoản không được để trống!";
+		}
+		if (username.contains(" ")) {
+			return "Tên tài khoản không được chứa khoảng cách (space)!";
+		}
+		if (userJPA.existsByUsername(username)) {
 			return "Tên tài khoản đã tồn tại!";
 		}
-		if (userJPA.existsByEmail(bean.getEmail())) {
+		if (userJPA.existsByEmail(email)) {
 			return "Email đã được sử dụng!";
 		}
 
 		User user = new User();
-		user.setUsername(bean.getUsername());
+		user.setUsername(username);
 		user.setPassword(bean.getPassword());
-		user.setName(bean.getName());
-		user.setEmail(bean.getEmail());
+		user.setName(name);
+		user.setEmail(email);
 		user.setRole(0); // 0: User, 1: Admin
 		user.setStatus(true);
 

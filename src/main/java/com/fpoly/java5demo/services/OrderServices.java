@@ -41,6 +41,9 @@ public class OrderServices {
 	@Autowired
 	private com.fpoly.java5demo.jpas.CartDetailJPA cartDetailJPA;
 
+	@Autowired
+	private com.fpoly.java5demo.services.NotificationServices notificationServices;
+
 	@Transactional
 	public Order createOrder(User user, CheckoutBean checkoutBean) {
 		Map<Integer, Integer> cartItems = cartDetailServices.getCartMapSession();
@@ -83,6 +86,8 @@ public class OrderServices {
 
 		Order savedOrder = orderJPA.save(order);
 
+		java.util.Set<Integer> notifiedSellerIds = new java.util.HashSet<>();
+
 		// Lưu chi tiết đơn hàng và trừ kho nguyên tử (Atomic Update chống Race Condition)
 		for (Product item : products) {
 			int buyQty = cartItems.get(item.getId());
@@ -102,7 +107,27 @@ public class OrderServices {
 			detail.setPrice(item.getPrice());
 			detail.setQuantity(buyQty);
 			orderDetailJPA.save(detail);
+
+			if (item.getSeller() != null && !notifiedSellerIds.contains(item.getSeller().getId())) {
+				notifiedSellerIds.add(item.getSeller().getId());
+				notificationServices.createNotification(
+						item.getSeller(),
+						"Đơn hàng mới chờ duyệt!",
+						String.format("Bạn có đơn hàng mới #%d từ khách hàng %s đang chờ duyệt.", savedOrder.getId(), user.getName()),
+						"/seller/order/" + savedOrder.getId(),
+						"ORDER"
+				);
+			}
 		}
+
+		// Thông báo cho Người Mua
+		notificationServices.createNotification(
+				user,
+				"Đặt hàng thành công!",
+				String.format("Đơn hàng #%d trị giá %s ₫ đã được tạo và đang chờ Shop duyệt đơn.", savedOrder.getId(), String.format("%,d", savedOrder.getTotalPrice())),
+				"/user/order/" + savedOrder.getId(),
+				"ORDER"
+		);
 
 		// Xóa giỏ hàng trong session và dọn sạch giỏ hàng trong Database
 		cartDetailServices.clearCart();
@@ -142,24 +167,34 @@ public class OrderServices {
 			return false;
 		}
 
-		// Kiểm tra logic trạng thái đơn hàng (Order State Machine):
-		// 1. Đơn hàng đã Hủy (5) không được mở lại tùy tiện
-		if (order.getStatus() == 5 && status != 5) {
+		int currentStatus = order.getStatus();
+		if (currentStatus == status) {
+			return true;
+		}
+
+		// Kiểm tra logic trạng thái đơn hàng (Order State Machine) & Chống nhảy cóc (No skipping steps):
+		// 0 (Chờ duyệt) -> chỉ được sang 1 (Đã duyệt & Đóng gói). Không được nhảy cóc sang 2, 3, 4, 5.
+		// 1 (Đã duyệt) -> chỉ được sang 2 (Đang giao hàng) hoặc 5 (Hủy do hết hàng). Không nhảy sang 3, 4.
+		// 2 (Đang giao hàng) -> chỉ được sang 3 (Đã nhận hàng) hoặc 5 (Giao thất bại). Không nhảy sang 4.
+		// 3 (Đã nhận hàng) -> chỉ được sang 4 (Hoàn thành). Không nhảy sang 5.
+		// 4 (Hoàn thành) hoặc 5 (Đã hủy) -> Trạng thái kết thúc, không được phép thay đổi.
+		boolean isValidTransition = false;
+		if (currentStatus == 0 && status == 1) {
+			isValidTransition = true;
+		} else if (currentStatus == 1 && (status == 2 || status == 5)) {
+			isValidTransition = true;
+		} else if (currentStatus == 2 && (status == 3 || status == 5)) {
+			isValidTransition = true;
+		} else if (currentStatus == 3 && status == 4) {
+			isValidTransition = true;
+		}
+
+		if (!isValidTransition) {
 			return false;
 		}
 
-		// 2. Đơn hàng đã Hoàn thành (4) không được đổi ngược lại
-		if (order.getStatus() == 4 && status != 4) {
-			return false;
-		}
-
-		// 3. Đơn hàng đã Giao (3) hoặc Hoàn thành (4) không được tự ý hủy
-		if ((order.getStatus() == 3 || order.getStatus() == 4) && status == 5) {
-			return false;
-		}
-
-		// 4. Nếu chuyển sang Đã hủy (status = 5) từ trạng thái chưa hủy (0, 1, 2) thì hoàn kho
-		if (order.getStatus() != 5 && status == 5) {
+		// Nếu chuyển sang Đã hủy (status = 5) từ trạng thái chưa hủy (1, 2) thì hoàn kho
+		if (currentStatus != 5 && status == 5) {
 			List<OrderDetail> details = orderDetailJPA.findByOrderId(orderId);
 			for (OrderDetail detail : details) {
 				Product p = detail.getProduct();
@@ -172,6 +207,46 @@ public class OrderServices {
 
 		order.setStatus(status);
 		orderJPA.save(order);
+
+		// Tạo thông báo cho Người Mua theo từng bước tiến trình
+		if (order.getUser() != null) {
+			String title;
+			String msg;
+			switch (status) {
+				case 1:
+					title = "Shop đã duyệt đơn hàng #" + order.getId();
+					msg = "Kiện hàng #" + order.getId() + " của bạn đã được Shop duyệt và đang đóng gói.";
+					break;
+				case 2:
+					title = "Đơn hàng #" + order.getId() + " đang được giao";
+					msg = "Kiện hàng #" + order.getId() + " đã bàn giao cho shipper và đang trên đường tới bạn.";
+					break;
+				case 3:
+					title = "Đơn hàng #" + order.getId() + " đã giao thành công";
+					msg = "Đơn hàng #" + order.getId() + " đã được giao đến bạn. Hãy kiểm tra sản phẩm nhé!";
+					break;
+				case 4:
+					title = "Đơn hàng #" + order.getId() + " hoàn thành";
+					msg = "Đơn hàng #" + order.getId() + " đã hoàn tất. Cảm ơn bạn đã mua sắm tại PolyShop!";
+					break;
+				case 5:
+					title = "Đơn hàng #" + order.getId() + " đã bị hủy";
+					msg = "Đơn hàng #" + order.getId() + " của bạn đã bị hủy.";
+					break;
+				default:
+					title = "Cập nhật đơn hàng #" + order.getId();
+					msg = "Trạng thái đơn hàng #" + order.getId() + " vừa được cập nhật.";
+			}
+
+			notificationServices.createNotification(
+					order.getUser(),
+					title,
+					msg,
+					"/user/order/" + order.getId(),
+					"ORDER"
+			);
+		}
+
 		return true;
 	}
 

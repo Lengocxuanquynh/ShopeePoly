@@ -54,6 +54,9 @@
           </li>
         </ul>
         <div class="d-flex align-items-center gap-2">
+          <a th:href="@{/}" class="btn btn-outline-light btn-sm" title="Vào trang mua hàng">
+            <i class="bi bi-cart3 me-1"></i>Mua Hàng
+          </a>
           <a th:href="@{'/shop/' + ${currentUser.id}}" class="btn btn-outline-light btn-sm" title="Xem gian hàng của bạn như khách hàng nhìn thấy">
             <i class="bi bi-eye me-1"></i>Xem Shop Công Khai
           </a>

@@ -7,12 +7,26 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" th:href="@{/static/css/polyshop.css}">
+  <style>
+    .admin-navbar .nav-link {
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.65rem;
+    }
+    .admin-navbar .navbar-brand {
+      white-space: nowrap;
+      font-size: 1.1rem;
+    }
+  </style>
 </head>
 <body class="bg-light">
 
   <!-- Admin Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
-    <div class="container">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-2 admin-navbar">
+    <div class="container-fluid px-4">
       <a class="navbar-brand fw-bold text-danger d-flex align-items-center gap-2" th:href="@{/admin}">
         <i class="bi bi-shield-lock-fill"></i>
         <span>PolyShop Super Admin</span>
@@ -24,155 +38,188 @@
       <div class="collapse navbar-collapse" id="adminNav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" th:href="@{/admin}"><i class="bi bi-speedometer2 me-1"></i>Tổng Quan</a></li>
-          <li class="nav-item"><a class="nav-link" th:href="@{/admin/product-form}"><i class="bi bi-box-seam me-1"></i>Sản Phẩm</a></li>
+          <li class="nav-item"><a class="nav-link" th:href="@{/admin/products}"><i class="bi bi-box-seam me-1"></i>Sản Phẩm</a></li>
           <li class="nav-item"><a class="nav-link" th:href="@{/admin/category-form}"><i class="bi bi-tags me-1"></i>Danh Mục</a></li>
           <li class="nav-item"><a class="nav-link" th:href="@{/admin/orders}"><i class="bi bi-receipt me-1"></i>Đơn Hàng</a></li>
-          <li class="nav-item"><a class="nav-link active" th:href="@{/admin/user-form}"><i class="bi bi-people me-1"></i>Người Dùng</a></li>
-          <li class="nav-item"><a class="nav-link text-warning" th:href="@{/admin/seller-requests}"><i class="bi bi-shop me-1"></i>Duyệt Người Bán</a></li>
+          <li class="nav-item"><a class="nav-link active fw-bold text-white" th:href="@{/admin/user-form}"><i class="bi bi-people me-1"></i>Người Dùng</a></li>
+          <li class="nav-item">
+            <a class="nav-link text-warning" th:href="@{/admin/seller-requests}">
+              <i class="bi bi-shop me-1"></i>Duyệt Người Bán
+              <span th:if="${pendingSellerCount != null && pendingSellerCount > 0}" class="badge bg-danger ms-1" th:text="${pendingSellerCount}"></span>
+            </a>
+          </li>
         </ul>
-        <div class="d-flex align-items-center gap-3">
-          <a th:href="@{/}" class="btn btn-outline-light btn-sm"><i class="bi bi-shop me-1"></i>Trang Khách</a>
-          <a th:href="@{/logout}" class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Đăng Xuất</a>
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-white-50 small me-2 d-none d-md-inline"><i class="bi bi-person-circle me-1"></i>Super Admin</span>
+          <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm text-white"><i class="bi bi-box-arrow-right me-1"></i>Đăng Xuất</a>
         </div>
       </div>
     </div>
   </nav>
 
   <main class="py-4">
-    <div class="container">
+    <div class="container-fluid px-4">
 
       <!-- Alerts -->
-      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
         <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
-      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
         <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
 
-      <div class="row g-4">
-        <!-- Left: User Form -->
-        <div class="col-lg-5">
-          <div class="bg-white rounded-3 p-4 shadow-sm border">
-            <h5 class="fw-bold text-dark border-bottom pb-3 mb-2">
-              <i class="bi bi-person-plus-fill text-danger me-2"></i>Thêm Mới Người Dùng
-            </h5>
-            <div class="alert alert-light border small text-muted mb-3 py-2">
-              <i class="bi bi-shield-check text-primary me-1"></i>
-              <strong>Chính sách:</strong> Admin chỉ có quyền cấp tài khoản ban đầu và <strong>Khóa / Mở khóa</strong>. Không được phép sửa thông tin cá nhân của người dùng.
-            </div>
+      <!-- Header & Action -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+          <h3 class="fw-bold text-dark mb-1">
+            <i class="bi bi-people-fill text-danger me-2"></i>Quản Lý Tài Khoản Người Dùng
+          </h3>
+          <p class="text-muted small mb-0">
+            Giám sát danh sách thành viên toàn sàn. Quản trị viên chỉ có quyền Khóa / Mở khóa tài khoản, không được phép can thiệp thông tin cá nhân.
+          </p>
+        </div>
+        <div>
+          <button class="btn btn-polyshop-orange shadow-sm fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#addUserCollapse" aria-expanded="false" aria-controls="addUserCollapse">
+            <i class="bi bi-person-plus-fill me-1"></i> Thêm Mới Tài Khoản
+          </button>
+        </div>
+      </div>
 
-            <form method="post" th:action="@{/admin/user-form}" th:object="${bean}">
-              <input type="hidden" th:field="*{id}">
-
-              <div class="mb-3">
+      <!-- Add User Collapsible Form -->
+      <div class="collapse mb-4" id="addUserCollapse" th:classappend="${#fields.hasErrors('bean.*') ? 'show' : ''}">
+        <div class="card card-body bg-white border shadow-sm rounded-3">
+          <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+            <i class="bi bi-person-badge text-danger me-2"></i>Khởi Tạo Tài Khoản Mới
+          </h5>
+          <form method="post" th:action="@{/admin/user-form}" th:object="${bean}">
+            <input type="hidden" th:field="*{id}">
+            <div class="row g-3">
+              <div class="col-md-3">
                 <label for="username" class="form-label small fw-semibold">Tên đăng nhập (Username) *</label>
-                <input th:field="*{username}" type="text" class="form-control" id="username" placeholder="Ví dụ: user123"
+                <input th:field="*{username}" type="text" class="form-control form-control-sm" id="username" placeholder="Ví dụ: nhanvien1"
                        th:classappend="${#fields.hasErrors('username')} ? 'is-invalid' : ''">
                 <small class="text-danger" th:errors="*{username}"></small>
               </div>
 
-              <div class="mb-3">
+              <div class="col-md-3">
                 <label for="password" class="form-label small fw-semibold">Mật khẩu khởi tạo *</label>
-                <input th:field="*{password}" type="password" class="form-control" id="password" placeholder="Mật khẩu khởi tạo (tối thiểu 6 ký tự)"
+                <input th:field="*{password}" type="password" class="form-control form-control-sm" id="password" placeholder="Tối thiểu 6 ký tự"
                        th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''">
                 <small class="text-danger" th:errors="*{password}"></small>
               </div>
 
-              <div class="mb-3">
+              <div class="col-md-3">
                 <label for="name" class="form-label small fw-semibold">Họ và tên *</label>
-                <input th:field="*{name}" type="text" class="form-control" id="name" placeholder="Ví dụ: Nguyễn Văn A"
+                <input th:field="*{name}" type="text" class="form-control form-control-sm" id="name" placeholder="Nguyễn Văn A"
                        th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''">
                 <small class="text-danger" th:errors="*{name}"></small>
               </div>
 
-              <div class="mb-3">
+              <div class="col-md-3">
                 <label for="email" class="form-label small fw-semibold">Địa chỉ Email *</label>
-                <input th:field="*{email}" type="email" class="form-control" id="email" placeholder="email@polyshop.vn"
+                <input th:field="*{email}" type="email" class="form-control form-control-sm" id="email" placeholder="email@polyshop.vn"
                        th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''">
                 <small class="text-danger" th:errors="*{email}"></small>
               </div>
 
-              <div class="mb-3">
-                <label for="role" class="form-label small fw-semibold">Vai trò / Phân quyền *</label>
-                <select th:field="*{role}" class="form-select" id="role">
+              <div class="col-md-3">
+                <label for="role" class="form-label small fw-semibold">Phân quyền vai trò *</label>
+                <select th:field="*{role}" class="form-select form-select-sm" id="role">
                   <option value="0">Người Mua (Khách Hàng / Buyer)</option>
                   <option value="2">Người Bán Hàng (Seller)</option>
                   <option value="1">Super Admin (Quản Trị Tối Cao)</option>
                 </select>
               </div>
 
-              <div class="mb-4">
-                <div class="form-check form-switch">
+              <div class="col-md-3 d-flex align-items-end">
+                <div class="form-check form-switch mb-2">
                   <input class="form-check-input" type="checkbox" th:field="*{active}" id="active" checked>
                   <label class="form-check-label small fw-semibold" for="active">Kích hoạt tài khoản</label>
                 </div>
               </div>
 
-              <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-polyshop-orange px-4">
+              <div class="col-md-6 d-flex align-items-end justify-content-end gap-2">
+                <button type="submit" class="btn btn-danger btn-sm px-4 fw-bold">
                   <i class="bi bi-save me-1"></i>Lưu Tài Khoản
                 </button>
-                <a th:href="@{/admin/user-form}" class="btn btn-outline-secondary">
-                  Làm Mới
-                </a>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#addUserCollapse">
+                  Hủy bỏ
+                </button>
               </div>
-            </form>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Users List Full-Width Table Card -->
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+          <div class="fw-bold text-dark fs-6">
+            <i class="bi bi-list-ul me-1 text-danger"></i>Danh Sách Tài Khoản Hệ Thống
+            <span class="badge bg-secondary ms-2" th:text="${users.size()} + ' người dùng'"></span>
+          </div>
+          <div class="text-muted small">
+            <i class="bi bi-shield-check text-success me-1"></i>Super Admin chính được bảo vệ tối cao
           </div>
         </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-nowrap">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 60px;" class="ps-4">ID</th>
+                  <th>Tên đăng nhập</th>
+                  <th>Họ và tên</th>
+                  <th>Email liên hệ</th>
+                  <th>Phân quyền</th>
+                  <th>Trạng thái</th>
+                  <th class="text-end pe-4" style="width: 140px;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="u : ${users}">
+                  <td class="ps-4 fw-bold text-muted" th:text="'#' + ${u.id}">#1</td>
+                  <td>
+                    <span class="fw-bold text-dark" th:text="${u.username}">admin</span>
+                    <span th:if="${u.username == 'admin' or u.id == 1}" class="badge bg-danger-subtle text-danger border border-danger ms-1" style="font-size: 10px;">GỐC</span>
+                  </td>
+                  <td class="fw-semibold" th:text="${u.name}">Quản trị viên</td>
+                  <td class="text-muted" th:text="${u.email}">admin@polyshop.vn</td>
+                  <td>
+                    <span th:if="${u.role == 1}" class="badge bg-danger"><i class="bi bi-shield-shaded me-1"></i>Super Admin</span>
+                    <span th:if="${u.role == 2}" class="badge bg-warning text-dark"><i class="bi bi-shop me-1"></i>Người Bán</span>
+                    <span th:if="${u.role == 0}" class="badge bg-secondary">Người Mua</span>
+                  </td>
+                  <td>
+                    <span th:if="${u.status}" class="badge bg-success-subtle text-success border border-success d-inline-flex align-items-center gap-1">
+                      <i class="bi bi-check-circle-fill"></i> Hoạt động
+                    </span>
+                    <span th:unless="${u.status}" class="badge bg-danger-subtle text-danger border border-danger d-inline-flex align-items-center gap-1">
+                      <i class="bi bi-lock-fill"></i> Đang bị khóa
+                    </span>
+                  </td>
+                  <td class="text-end pe-4">
+                    <!-- Protected Super Admin -->
+                    <span th:if="${u.username == 'admin' or u.id == 1}" class="badge bg-light text-secondary border py-2 px-2">
+                      <i class="bi bi-shield-lock-fill text-danger me-1"></i>Bảo vệ tối cao
+                    </span>
 
-        <!-- Right: Users List Table -->
-        <div class="col-lg-7">
-          <div class="bg-white rounded-3 p-4 shadow-sm border">
-            <h5 class="fw-bold text-dark border-bottom pb-3 mb-3">
-              <i class="bi bi-people-fill text-danger me-2"></i>Danh Sách Người Dùng
-            </h5>
-
-            <div class="table-responsive">
-              <table class="table table-hover align-middle small">
-                <thead class="table-light">
-                  <tr>
-                    <th style="width: 50px;">ID</th>
-                    <th>Tên đăng nhập</th>
-                    <th>Họ và tên</th>
-                    <th>Email</th>
-                    <th>Vai trò</th>
-                    <th>Trạng thái</th>
-                    <th class="text-end" style="width: 110px;">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr th:each="u : ${users}">
-                    <td class="fw-bold" th:text="${u.id}">1</td>
-                    <td class="fw-semibold text-dark" th:text="${u.username}">admin</td>
-                    <td th:text="${u.name}">Quản trị viên</td>
-                    <td th:text="${u.email}">admin@polyshop.vn</td>
-                    <td>
-                      <span th:if="${u.role == 1}" class="badge bg-danger"><i class="bi bi-shield-shaded me-1"></i>Super Admin</span>
-                      <span th:if="${u.role == 2}" class="badge bg-warning text-dark"><i class="bi bi-shop me-1"></i>Người Bán</span>
-                      <span th:if="${u.role == 0}" class="badge bg-secondary">Người Mua</span>
-                    </td>
-                    <td>
-                      <span th:if="${u.status}" class="badge bg-success">Kích hoạt</span>
-                      <span th:unless="${u.status}" class="badge bg-warning text-dark">Khóa</span>
-                    </td>
-                    <td class="text-end">
-                      <form th:action="@{'/admin/user/toggle-status/' + ${u.id}}" method="post" class="d-inline"
-                            onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái (Khóa / Mở khóa) tài khoản này?');">
-                        <button th:if="${u.status}" type="submit" class="btn btn-sm btn-outline-warning" title="Khóa tài khoản">
-                          <i class="bi bi-lock-fill me-1"></i>Khóa
-                        </button>
-                        <button th:unless="${u.status}" type="submit" class="btn btn-sm btn-outline-success" title="Mở khóa tài khoản">
-                          <i class="bi bi-unlock-fill me-1"></i>Mở Khóa
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
+                    <!-- Regular Users / Other Admins -->
+                    <form th:unless="${u.username == 'admin' or u.id == 1}" th:action="@{'/admin/user/toggle-status/' + ${u.id}}" method="post" class="d-inline"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái (Khóa / Mở khóa) tài khoản này?');">
+                      <button th:if="${u.status}" type="submit" class="btn btn-sm btn-outline-warning" title="Khóa tài khoản này">
+                        <i class="bi bi-lock-fill me-1"></i>Khóa
+                      </button>
+                      <button th:unless="${u.status}" type="submit" class="btn btn-sm btn-outline-success" title="Mở khóa tài khoản này">
+                        <i class="bi bi-unlock-fill me-1"></i>Mở Khóa
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
